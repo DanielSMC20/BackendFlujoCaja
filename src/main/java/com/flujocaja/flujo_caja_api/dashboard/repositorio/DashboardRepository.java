@@ -157,10 +157,6 @@ public class DashboardRepository {
         this.paDashboardSel =
                 new SimpleJdbcCall(dataSource)
 
-                        .withSchemaName(
-                                "Finanzas"
-                        )
-
                         .withProcedureName(
                                 "PA_Dashboard_Sel"
                         )

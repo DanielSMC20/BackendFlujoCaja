@@ -74,9 +74,6 @@ public class MovimientoRepository {
                 new SimpleJdbcCall(
                         dataSource
                 )
-                        .withSchemaName(
-                                "Finanzas"
-                        )
                         .withProcedureName(
                                 "PA_Movimiento_Ins"
                         )
@@ -172,9 +169,7 @@ public class MovimientoRepository {
                 new SimpleJdbcCall(
                         dataSource
                 )
-                        .withSchemaName(
-                                "Finanzas"
-                        )
+
                         .withProcedureName(
                                 "PA_Movimiento_Sel"
                         )
@@ -225,9 +220,7 @@ public class MovimientoRepository {
                 new SimpleJdbcCall(
                         dataSource
                 )
-                        .withSchemaName(
-                                "Finanzas"
-                        )
+
                         .withProcedureName(
                                 "PA_Movimiento_Sel_Id"
                         )
@@ -258,9 +251,7 @@ public class MovimientoRepository {
                 new SimpleJdbcCall(
                         dataSource
                 )
-                        .withSchemaName(
-                                "Finanzas"
-                        )
+
                         .withProcedureName(
                                 "PA_Movimiento_Upd"
                         )
@@ -341,9 +332,7 @@ public class MovimientoRepository {
                 new SimpleJdbcCall(
                         dataSource
                 )
-                        .withSchemaName(
-                                "Finanzas"
-                        )
+
                         .withProcedureName(
                                 "PA_Movimiento_Upd_Cancelar"
                         )
@@ -384,9 +373,7 @@ public class MovimientoRepository {
                 new SimpleJdbcCall(
                         dataSource
                 )
-                        .withSchemaName(
-                                "Finanzas"
-                        )
+
                         .withProcedureName(
                                 "PA_Movimiento_Upd_Anular"
                         )

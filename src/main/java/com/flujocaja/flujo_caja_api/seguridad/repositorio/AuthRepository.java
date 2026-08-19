@@ -183,9 +183,6 @@ public class AuthRepository {
         this.paLogin =
                 new SimpleJdbcCall(dataSource)
 
-                        .withSchemaName(
-                                "Seguridad"
-                        )
 
                         .withProcedureName(
                                 "PA_Usuario_Sel_Login"
@@ -215,9 +212,6 @@ public class AuthRepository {
         this.paLoginFallido =
                 new SimpleJdbcCall(dataSource)
 
-                        .withSchemaName(
-                                "Seguridad"
-                        )
 
                         .withProcedureName(
                                 "PA_Usuario_Upd_LoginFallido"
@@ -236,10 +230,6 @@ public class AuthRepository {
 
         this.paLoginExitoso =
                 new SimpleJdbcCall(dataSource)
-
-                        .withSchemaName(
-                                "Seguridad"
-                        )
 
                         .withProcedureName(
                                 "PA_Usuario_Upd_LoginExitoso"

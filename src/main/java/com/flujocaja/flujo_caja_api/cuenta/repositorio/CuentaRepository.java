@@ -186,9 +186,7 @@ public class CuentaRepository {
         this.paCuentaSel =
                 new SimpleJdbcCall(dataSource)
 
-                        .withSchemaName(
-                                "Seguridad"
-                        )
+
 
                         .withProcedureName(
                                 "PA_Cuenta_Sel"
@@ -223,9 +221,7 @@ public class CuentaRepository {
         this.paCredencialSel =
                 new SimpleJdbcCall(dataSource)
 
-                        .withSchemaName(
-                                "Seguridad"
-                        )
+
 
                         .withProcedureName(
                                 "PA_Cuenta_Sel_Credencial"
@@ -255,9 +251,7 @@ public class CuentaRepository {
         this.paPasswordUpd =
                 new SimpleJdbcCall(dataSource)
 
-                        .withSchemaName(
-                                "Seguridad"
-                        )
+
 
                         .withProcedureName(
                                 "PA_Cuenta_Upd_Password"

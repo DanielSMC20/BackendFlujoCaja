@@ -112,10 +112,6 @@ public class FlujoCajaRepository {
         this.paFlujoCajaSel =
                 new SimpleJdbcCall(dataSource)
 
-                        .withSchemaName(
-                                "Finanzas"
-                        )
-
                         .withProcedureName(
                                 "PA_FlujoCaja_Sel"
                         )

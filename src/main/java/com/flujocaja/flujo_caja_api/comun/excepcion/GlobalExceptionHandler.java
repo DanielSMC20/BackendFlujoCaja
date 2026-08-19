@@ -342,4 +342,18 @@ public class GlobalExceptionHandler {
                 Map.of()
         );
     }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ApiErrorResponse> manejarEstado(
+            IllegalStateException ex,
+            HttpServletRequest request
+    ) {
+
+        return construirRespuesta(
+                HttpStatus.CONFLICT,
+                ex.getMessage(),
+                request.getRequestURI(),
+                Map.of()
+        );
+    }
 }

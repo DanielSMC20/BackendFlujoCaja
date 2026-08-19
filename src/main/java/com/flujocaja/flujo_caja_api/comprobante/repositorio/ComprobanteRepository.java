@@ -23,9 +23,7 @@ public class ComprobanteRepository {
         this.paComprobanteInsUpd =
                 new SimpleJdbcCall(dataSource)
 
-                        .withSchemaName(
-                                "Finanzas"
-                        )
+
 
                         .withProcedureName(
                                 "PA_Comprobante_InsUpd"

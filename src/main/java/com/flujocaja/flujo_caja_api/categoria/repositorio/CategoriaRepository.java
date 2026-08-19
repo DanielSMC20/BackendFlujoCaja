@@ -57,9 +57,6 @@ public class CategoriaRepository {
         paCategoriaSel =
                 new SimpleJdbcCall(dataSource)
 
-                        .withSchemaName(
-                                "Finanzas"
-                        )
 
                         .withProcedureName(
                                 "PA_CategoriaMovimiento_Sel"
@@ -98,9 +95,7 @@ public class CategoriaRepository {
         paCategoriaIns =
                 new SimpleJdbcCall(dataSource)
 
-                        .withSchemaName(
-                                "Finanzas"
-                        )
+
 
                         .withProcedureName(
                                 "PA_CategoriaMovimiento_Ins"
@@ -148,10 +143,6 @@ public class CategoriaRepository {
 
         paCategoriaUpd =
                 new SimpleJdbcCall(dataSource)
-
-                        .withSchemaName(
-                                "Finanzas"
-                        )
 
                         .withProcedureName(
                                 "PA_CategoriaMovimiento_Upd"

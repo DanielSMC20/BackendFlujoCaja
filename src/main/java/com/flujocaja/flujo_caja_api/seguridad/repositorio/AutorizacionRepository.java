@@ -82,10 +82,6 @@ public class AutorizacionRepository {
         this.paContextoAutorizacion =
                 new SimpleJdbcCall(dataSource)
 
-                        .withSchemaName(
-                                "Seguridad"
-                        )
-
                         .withProcedureName(
                                 "PA_Usuario_Sel_ContextoAutorizacion"
                         )

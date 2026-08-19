@@ -129,9 +129,6 @@ public class CargaMasivaRepository {
         this.paCargaMasiva =
                 new SimpleJdbcCall(dataSource)
 
-                        .withSchemaName(
-                                "Finanzas"
-                        )
 
                         .withProcedureName(
                                 "PA_Movimiento_Ins_CargaMasiva"

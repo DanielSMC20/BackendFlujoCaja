@@ -19,7 +19,7 @@ public class ConstanteRepository {
     public ConstanteRepository(DataSource dataSource) {
 
         this.paConstanteSel = new SimpleJdbcCall(dataSource)
-                .withSchemaName("dbo")
+
                 .withProcedureName("PA_Constante_Sel")
                 .withoutProcedureColumnMetaDataAccess()
                 .declareParameters(

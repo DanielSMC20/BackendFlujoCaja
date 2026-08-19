@@ -190,9 +190,7 @@ public class ReporteMovimientoRepository {
         paReporteMovimientoSel =
                 new SimpleJdbcCall(dataSource)
 
-                        .withSchemaName(
-                                "Finanzas"
-                        )
+
 
                         .withProcedureName(
                                 "PA_ReporteMovimiento_Sel"

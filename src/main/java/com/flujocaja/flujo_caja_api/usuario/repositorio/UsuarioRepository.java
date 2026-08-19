@@ -134,8 +134,6 @@ public class UsuarioRepository {
         this.paListar =
                 new SimpleJdbcCall(dataSource)
 
-                        .withSchemaName("Seguridad")
-
                         .withProcedureName(
                                 "PA_UsuarioEmpresa_Sel"
                         )
@@ -164,7 +162,6 @@ public class UsuarioRepository {
         this.paObtener =
                 new SimpleJdbcCall(dataSource)
 
-                        .withSchemaName("Seguridad")
 
                         .withProcedureName(
                                 "PA_UsuarioEmpresa_Sel_Id"
@@ -193,8 +190,6 @@ public class UsuarioRepository {
 
         this.paCrear =
                 new SimpleJdbcCall(dataSource)
-
-                        .withSchemaName("Seguridad")
 
                         .withProcedureName(
                                 "PA_UsuarioEmpresa_Ins"
@@ -249,8 +244,6 @@ public class UsuarioRepository {
         this.paActualizar =
                 new SimpleJdbcCall(dataSource)
 
-                        .withSchemaName("Seguridad")
-
                         .withProcedureName(
                                 "PA_UsuarioEmpresa_Upd"
                         )
@@ -299,7 +292,6 @@ public class UsuarioRepository {
         this.paEstado =
                 new SimpleJdbcCall(dataSource)
 
-                        .withSchemaName("Seguridad")
 
                         .withProcedureName(
                                 "PA_UsuarioEmpresa_Upd_Estado"
@@ -339,8 +331,6 @@ public class UsuarioRepository {
         this.paResetPassword =
                 new SimpleJdbcCall(dataSource)
 
-                        .withSchemaName("Seguridad")
-
                         .withProcedureName(
                                 "PA_UsuarioCredencial_Upd_ResetPassword"
                         )
@@ -379,7 +369,6 @@ public class UsuarioRepository {
         this.paRoles =
                 new SimpleJdbcCall(dataSource)
 
-                        .withSchemaName("Seguridad")
 
                         .withProcedureName(
                                 "PA_Rol_Sel_Gestion"
