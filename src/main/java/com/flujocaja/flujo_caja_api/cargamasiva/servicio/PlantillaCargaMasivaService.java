@@ -47,12 +47,12 @@ public class PlantillaCargaMasivaService {
     private static final String HOJA_CARGA = "Carga";
     private static final String HOJA_CLASIFICADORES = "Clasificadores";
     private static final String HOJA_EJEMPLO = "Ejemplo";
-    private static final String NOMBRE_RANGO_CATEGORIAS = "CategoriasActivas";
+
+    private static final String NOMBRE_RANGO_CATEGORIAS =
+            "CategoriasActivas";
 
     private static final ZoneId ZONA_HORARIA =
-            ZoneId.of(
-                    "America/Lima"
-            );
+            ZoneId.of("America/Lima");
 
     private static final String RUTA_PLANTILLA =
             "plantillas/plantilla-carga-masiva-egresos.xlsx";
@@ -502,7 +502,8 @@ public class PlantillaCargaMasivaService {
 
         if (rango == null) {
 
-            rango = libro.createName();
+            rango =
+                    libro.createName();
 
             rango.setNameName(
                     NOMBRE_RANGO_CATEGORIAS
@@ -532,6 +533,10 @@ public class PlantillaCargaMasivaService {
             XSSFSheet hoja
     ) {
 
+        /*
+         * Eliminamos las validaciones que pueda traer
+         * la plantilla base para volver a generarlas.
+         */
         if (
                 hoja.getCTWorksheet()
                         .isSetDataValidations()
@@ -546,6 +551,11 @@ public class PlantillaCargaMasivaService {
                 hoja.getDataValidationHelper();
 
 
+        /*
+         * FECHA
+         *
+         * Mantiene validación estricta.
+         */
         agregarValidacion(
                 hoja,
                 ayuda.createDateConstraint(
@@ -560,6 +570,11 @@ public class PlantillaCargaMasivaService {
         );
 
 
+        /*
+         * DESCRIPCIÓN
+         *
+         * De 1 a 150 caracteres.
+         */
         agregarValidacion(
                 hoja,
                 ayuda.createTextLengthConstraint(
@@ -573,6 +588,11 @@ public class PlantillaCargaMasivaService {
         );
 
 
+        /*
+         * MONTO
+         *
+         * Debe ser mayor o igual a 0.01.
+         */
         agregarValidacion(
                 hoja,
                 ayuda.createDecimalConstraint(
@@ -586,6 +606,11 @@ public class PlantillaCargaMasivaService {
         );
 
 
+        /*
+         * CATEGORÍA
+         *
+         * Solo permite categorías activas.
+         */
         agregarValidacion(
                 hoja,
                 ayuda.createFormulaListConstraint(
@@ -597,6 +622,15 @@ public class PlantillaCargaMasivaService {
         );
 
 
+        /*
+         * ¿YA SE PAGÓ?
+         *
+         * Sigue mostrando el desplegable NO / SÍ.
+         *
+         * FALSE:
+         * No mostramos el bloqueo de Excel para esta
+         * columna, facilitando copiar y pegar valores.
+         */
         agregarValidacion(
                 hoja,
                 ayuda.createExplicitListConstraint(
@@ -607,17 +641,51 @@ public class PlantillaCargaMasivaService {
                 ),
                 COLUMNA_ESTADO,
                 "Estado no válido",
-                "Selecciona SÍ para pagado o NO para proyectado."
+                "Selecciona SÍ para pagado o NO para proyectado.",
+                false
         );
     }
 
 
+    /**
+     * Método por defecto.
+     *
+     * Todas las validaciones que usen esta versión
+     * bloquearán valores incorrectos.
+     */
     private void agregarValidacion(
             XSSFSheet hoja,
             DataValidationConstraint restriccion,
             int columna,
             String tituloError,
             String mensajeError
+    ) {
+
+        agregarValidacion(
+                hoja,
+                restriccion,
+                columna,
+                tituloError,
+                mensajeError,
+                true
+        );
+    }
+
+
+    /**
+     * Método configurable.
+     *
+     * @param bloquearValorInvalido
+     * true  = Excel muestra error y bloquea un valor no válido.
+     * false = no muestra el error de bloqueo.
+     */
+    private void agregarValidacion(
+            XSSFSheet hoja,
+            DataValidationConstraint restriccion,
+            int columna,
+            String tituloError,
+            String mensajeError,
+            boolean bloquearValorInvalido
     ) {
 
         CellRangeAddressList rango =
@@ -637,20 +705,19 @@ public class PlantillaCargaMasivaService {
                         );
 
 
-        validacion.setEmptyCellAllowed(
-                true
-        );
-
-
+        validacion.setEmptyCellAllowed(true);
         validacion.setShowErrorBox(
-                true
+                bloquearValorInvalido
         );
 
 
-        validacion.createErrorBox(
-                tituloError,
-                mensajeError
-        );
+        if (bloquearValorInvalido) {
+
+            validacion.createErrorBox(
+                    tituloError,
+                    mensajeError
+            );
+        }
 
 
         hoja.addValidationData(
