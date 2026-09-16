@@ -16,6 +16,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -1127,6 +1128,19 @@ public class MovimientoRepository {
 
                 rs.getString(
                         "cHashXml"
+                ),
+                obtenerLongNullable(
+                        rs,
+                        "nUsuarioRegistroId"
+                ),
+
+                rs.getString(
+                        "cUsuarioRegistro"
+                ),
+
+                obtenerFechaHora(
+                        rs,
+                        "dFechaRegistro"
                 )
         );
     }
@@ -1175,5 +1189,38 @@ public class MovimientoRepository {
         return rs.getBoolean(
                 columna
         );
+    }
+
+    private LocalDateTime obtenerFechaHora(
+            ResultSet rs,
+            String columna
+    ) throws SQLException {
+
+        java.sql.Timestamp fechaHora =
+                rs.getTimestamp(
+                        columna
+                );
+
+        return fechaHora == null
+                ? null
+                : fechaHora.toLocalDateTime();
+    }
+
+
+    private Long obtenerLongNullable(
+            ResultSet rs,
+            String columna
+    ) throws SQLException {
+
+        Object valor =
+                rs.getObject(
+                        columna
+                );
+
+        if (valor == null) {
+            return null;
+        }
+
+        return ((Number) valor).longValue();
     }
 }
