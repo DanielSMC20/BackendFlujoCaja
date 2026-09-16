@@ -71,12 +71,8 @@ public class MovimientoRepository {
            ===================================================== */
 
         this.paMovimientoIns =
-                new SimpleJdbcCall(
-                        dataSource
-                )
-                        .withProcedureName(
-                                "PA_Movimiento_Ins"
-                        )
+                new SimpleJdbcCall(dataSource)
+                        .withProcedureName("PA_Movimiento_Ins")
                         .withoutProcedureColumnMetaDataAccess()
                         .declareParameters(
 
@@ -101,23 +97,13 @@ public class MovimientoRepository {
                                 ),
 
                                 new SqlParameter(
-                                        "dFechaProyectada",
-                                        Types.DATE
-                                ),
-
-                                new SqlParameter(
-                                        "dFechaPago",
-                                        Types.DATE
-                                ),
-
-                                new SqlParameter(
                                         "bCancelado",
                                         Types.BIT
                                 ),
 
                                 new SqlParameter(
                                         "cDescripcion",
-                                        Types.NVARCHAR
+                                        Types.VARCHAR
                                 ),
 
                                 new SqlParameter(
@@ -147,11 +133,11 @@ public class MovimientoRepository {
 
                                 new SqlParameter(
                                         "cObservacion",
-                                        Types.NVARCHAR
+                                        Types.VARCHAR
                                 ),
 
                                 new SqlParameter(
-                                        "nUsuarioRegistroId",
+                                        "nUsuarioId",
                                         Types.BIGINT
                                 )
                         )
@@ -159,7 +145,6 @@ public class MovimientoRepository {
                                 "movimiento",
                                 movimientoMapper
                         );
-
 
         /* =====================================================
            LISTAR
@@ -534,35 +519,18 @@ public class MovimientoRepository {
        ========================================================= */
 
     public MovimientoResponse registrar(
-
             Integer empresaId,
-
             Integer tipoMovimiento,
-
             Integer categoriaId,
-
             LocalDate fechaMovimiento,
-
-            LocalDate fechaProyectada,
-
-            LocalDate fechaPago,
-
             Boolean cancelado,
-
             String descripcion,
-
             BigDecimal monto,
-
             Integer medioPago,
-
             Integer tipoComprobante,
-
             Integer moneda,
-
             Integer origenRegistro,
-
             String observacion,
-
             Long usuarioId
     ) {
 
@@ -594,18 +562,6 @@ public class MovimientoRepository {
                         )
 
                         .addValue(
-                                "dFechaProyectada",
-                                fechaProyectada,
-                                Types.DATE
-                        )
-
-                        .addValue(
-                                "dFechaPago",
-                                fechaPago,
-                                Types.DATE
-                        )
-
-                        .addValue(
                                 "bCancelado",
                                 cancelado,
                                 Types.BIT
@@ -614,7 +570,7 @@ public class MovimientoRepository {
                         .addValue(
                                 "cDescripcion",
                                 descripcion,
-                                Types.NVARCHAR
+                                Types.VARCHAR
                         )
 
                         .addValue(
@@ -650,11 +606,11 @@ public class MovimientoRepository {
                         .addValue(
                                 "cObservacion",
                                 observacion,
-                                Types.NVARCHAR
+                                Types.VARCHAR
                         )
 
                         .addValue(
-                                "nUsuarioRegistroId",
+                                "nUsuarioId",
                                 usuarioId,
                                 Types.BIGINT
                         );

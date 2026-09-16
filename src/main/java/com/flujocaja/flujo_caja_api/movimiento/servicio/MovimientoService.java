@@ -219,42 +219,25 @@ public class MovimientoService {
 
         MovimientoResponse movimiento =
                 movimientoRepository.registrar(
-
                         empresaId,
-
                         request.tipoMovimiento(),
-
                         request.categoriaId(),
 
                         estado.fechaMovimiento(),
-
-                        estado.fechaProyectada(),
-
-                        estado.fechaPago(),
-
                         estado.cancelado(),
 
                         request.descripcion().trim(),
-
                         request.monto(),
-
                         request.medioPago(),
-
                         request.tipoComprobante(),
-
                         request.moneda(),
-
                         origenRegistro,
-
                         request.observacion(),
-
                         usuarioId
                 );
 
 
-        /* -----------------------------------------------------
-           COMPROBANTE
-           ----------------------------------------------------- */
+
 
         comprobanteRepository.guardar(
 
