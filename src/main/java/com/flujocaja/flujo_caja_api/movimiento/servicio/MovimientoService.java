@@ -257,7 +257,9 @@ public class MovimientoService {
 
                 request.archivoXmlNombre(),
 
-                request.hashXml()
+                request.hashXml(),
+                usuarioId
+
         );
 
 
@@ -427,7 +429,9 @@ public class MovimientoService {
 
                 request.archivoXmlNombre(),
 
-                request.hashXml()
+                request.hashXml(),
+                usuarioId
+
         );
 
 

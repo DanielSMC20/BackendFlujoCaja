@@ -6,7 +6,6 @@ import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
-
 import java.sql.Types;
 import java.time.LocalDate;
 
@@ -22,15 +21,10 @@ public class ComprobanteRepository {
 
         this.paComprobanteInsUpd =
                 new SimpleJdbcCall(dataSource)
-
-
-
                         .withProcedureName(
                                 "PA_Comprobante_InsUpd"
                         )
-
                         .withoutProcedureColumnMetaDataAccess()
-
                         .declareParameters(
 
                                 new SqlParameter(
@@ -65,17 +59,22 @@ public class ComprobanteRepository {
 
                                 new SqlParameter(
                                         "cRazonSocialEmisor",
-                                        Types.NVARCHAR
+                                        Types.VARCHAR
                                 ),
 
                                 new SqlParameter(
                                         "cArchivoXmlNombre",
-                                        Types.NVARCHAR
+                                        Types.VARCHAR
                                 ),
 
                                 new SqlParameter(
                                         "cHashXml",
                                         Types.CHAR
+                                ),
+
+                                new SqlParameter(
+                                        "nUsuarioId",
+                                        Types.BIGINT
                                 )
                         );
     }
@@ -94,69 +93,64 @@ public class ComprobanteRepository {
             String razonSocialEmisor,
 
             String archivoXmlNombre,
-            String hashXml
+            String hashXml,
+
+            Long usuarioId
     ) {
 
         MapSqlParameterSource parametros =
                 new MapSqlParameterSource()
-
                         .addValue(
                                 "nEmpresaId",
                                 empresaId,
                                 Types.INTEGER
                         )
-
                         .addValue(
                                 "nMovimientoId",
                                 movimientoId,
                                 Types.BIGINT
                         )
-
                         .addValue(
                                 "dFechaComprobante",
                                 fechaComprobante,
                                 Types.DATE
                         )
-
                         .addValue(
                                 "cSerieComprobante",
                                 serieComprobante,
                                 Types.VARCHAR
                         )
-
                         .addValue(
                                 "cNumeroComprobante",
                                 numeroComprobante,
                                 Types.VARCHAR
                         )
-
                         .addValue(
                                 "cDocumentoEmisor",
                                 documentoEmisor,
                                 Types.VARCHAR
                         )
-
                         .addValue(
                                 "cRazonSocialEmisor",
                                 razonSocialEmisor,
-                                Types.NVARCHAR
+                                Types.VARCHAR
                         )
-
                         .addValue(
                                 "cArchivoXmlNombre",
                                 archivoXmlNombre,
-                                Types.NVARCHAR
+                                Types.VARCHAR
                         )
-
                         .addValue(
                                 "cHashXml",
                                 hashXml,
                                 Types.CHAR
+                        )
+                        .addValue(
+                                "nUsuarioId",
+                                usuarioId,
+                                Types.BIGINT
                         );
 
-
-        paComprobanteInsUpd.execute(
-                parametros
-        );
+        paComprobanteInsUpd.execute(parametros);
     }
 }
