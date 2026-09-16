@@ -135,6 +135,9 @@ public class PlantillaCargaMasivaService {
                             libro,
                             HOJA_CARGA
                     );
+            habilitarEdicionHojaCarga(
+                    hojaCarga
+            );
 
 
             XSSFSheet hojaClasificadores =
@@ -725,5 +728,25 @@ public class PlantillaCargaMasivaService {
         hoja.addValidationData(
                 validacion
         );
+    }
+
+    private void habilitarEdicionHojaCarga(
+            XSSFSheet hoja
+    ) {
+        /*
+         * La plantilla base puede contener protección.
+         * La eliminamos para permitir copiar y pegar
+         * fechas, clasificadores y estados.
+         *
+         * La aplicación validará nuevamente cada fila
+         * antes de confirmar la carga.
+         */
+        if (
+                hoja.getCTWorksheet()
+                        .isSetSheetProtection()
+        ) {
+            hoja.getCTWorksheet()
+                    .unsetSheetProtection();
+        }
     }
 }
