@@ -2,8 +2,7 @@ package com.flujocaja.flujo_caja_api.movimiento.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-
+import java.time.Instant;
 public record MovimientoDetalleResponse(
 
         Long id,
@@ -55,7 +54,6 @@ public record MovimientoDetalleResponse(
         String hashXml,
         Long usuarioRegistroId,
         String usuarioRegistro,
-        LocalDateTime fechaRegistro
-
+        Instant fechaRegistro
 ) {
 }

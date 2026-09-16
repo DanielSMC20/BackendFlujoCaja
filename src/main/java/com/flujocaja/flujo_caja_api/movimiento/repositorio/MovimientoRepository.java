@@ -20,7 +20,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
+import java.time.Instant;
+import java.time.ZoneOffset;
 @Repository
 public class MovimientoRepository {
 
@@ -1191,19 +1192,19 @@ public class MovimientoRepository {
         );
     }
 
-    private LocalDateTime obtenerFechaHora(
+    private Instant obtenerFechaHora(
             ResultSet rs,
             String columna
     ) throws SQLException {
 
         java.sql.Timestamp fechaHora =
-                rs.getTimestamp(
-                        columna
-                );
+                rs.getTimestamp(columna);
 
         return fechaHora == null
                 ? null
-                : fechaHora.toLocalDateTime();
+                : fechaHora
+                .toLocalDateTime()
+                .toInstant(ZoneOffset.UTC);
     }
 
 
