@@ -235,15 +235,15 @@ public class MovimientoRepository {
            ===================================================== */
 
         this.paMovimientoUpd =
-                new SimpleJdbcCall(
-                        dataSource
-                )
-
-                        .withProcedureName(
-                                "PA_Movimiento_Upd"
-                        )
+                new SimpleJdbcCall(dataSource)
+                        .withProcedureName("PA_Movimiento_Upd")
                         .withoutProcedureColumnMetaDataAccess()
                         .declareParameters(
+
+                                new SqlParameter(
+                                        "nMovimientoId",
+                                        Types.BIGINT
+                                ),
 
                                 new SqlParameter(
                                         "nEmpresaId",
@@ -251,8 +251,8 @@ public class MovimientoRepository {
                                 ),
 
                                 new SqlParameter(
-                                        "nMovimientoId",
-                                        Types.BIGINT
+                                        "nTipoMovimiento",
+                                        Types.INTEGER
                                 ),
 
                                 new SqlParameter(
@@ -266,13 +266,13 @@ public class MovimientoRepository {
                                 ),
 
                                 new SqlParameter(
-                                        "dFechaProyectada",
-                                        Types.DATE
+                                        "bCancelado",
+                                        Types.BIT
                                 ),
 
                                 new SqlParameter(
                                         "cDescripcion",
-                                        Types.NVARCHAR
+                                        Types.VARCHAR
                                 ),
 
                                 new SqlParameter(
@@ -296,18 +296,19 @@ public class MovimientoRepository {
                                 ),
 
                                 new SqlParameter(
-                                        "cObservacion",
-                                        Types.NVARCHAR
+                                        "nOrigenRegistro",
+                                        Types.INTEGER
                                 ),
 
                                 new SqlParameter(
-                                        "nUsuarioModificacionId",
+                                        "cObservacion",
+                                        Types.VARCHAR
+                                ),
+
+                                new SqlParameter(
+                                        "nUsuarioId",
                                         Types.BIGINT
                                 )
-                        )
-                        .returningResultSet(
-                                "movimiento",
-                                movimientoMapper
                         );
 
 
@@ -636,15 +637,17 @@ public class MovimientoRepository {
 
     public MovimientoResponse actualizar(
 
+            Long movimientoId,
+
             Integer empresaId,
 
-            Long movimientoId,
+            Integer tipoMovimiento,
 
             Integer categoriaId,
 
             LocalDate fechaMovimiento,
 
-            LocalDate fechaProyectada,
+            Boolean cancelado,
 
             String descripcion,
 
@@ -656,6 +659,8 @@ public class MovimientoRepository {
 
             Integer moneda,
 
+            Integer origenRegistro,
+
             String observacion,
 
             Long usuarioId
@@ -665,15 +670,21 @@ public class MovimientoRepository {
                 new MapSqlParameterSource()
 
                         .addValue(
+                                "nMovimientoId",
+                                movimientoId,
+                                Types.BIGINT
+                        )
+
+                        .addValue(
                                 "nEmpresaId",
                                 empresaId,
                                 Types.INTEGER
                         )
 
                         .addValue(
-                                "nMovimientoId",
-                                movimientoId,
-                                Types.BIGINT
+                                "nTipoMovimiento",
+                                tipoMovimiento,
+                                Types.INTEGER
                         )
 
                         .addValue(
@@ -689,15 +700,15 @@ public class MovimientoRepository {
                         )
 
                         .addValue(
-                                "dFechaProyectada",
-                                fechaProyectada,
-                                Types.DATE
+                                "bCancelado",
+                                cancelado,
+                                Types.BIT
                         )
 
                         .addValue(
                                 "cDescripcion",
                                 descripcion,
-                                Types.NVARCHAR
+                                Types.VARCHAR
                         )
 
                         .addValue(
@@ -725,29 +736,38 @@ public class MovimientoRepository {
                         )
 
                         .addValue(
-                                "cObservacion",
-                                observacion,
-                                Types.NVARCHAR
+                                "nOrigenRegistro",
+                                origenRegistro,
+                                Types.INTEGER
                         )
 
                         .addValue(
-                                "nUsuarioModificacionId",
+                                "cObservacion",
+                                observacion,
+                                Types.VARCHAR
+                        )
+
+                        .addValue(
+                                "nUsuarioId",
                                 usuarioId,
                                 Types.BIGINT
                         );
 
+        paMovimientoUpd.execute(parametros);
 
-        Map<String, Object> resultado =
-                paMovimientoUpd.execute(
-                        parametros
-                );
+        MovimientoDetalleResponse detalle =
+                obtenerDetallePorId(
+                        empresaId,
+                        movimientoId
+                )
+                        .orElseThrow(
+                                () -> new IllegalStateException(
+                                        "El movimiento fue actualizado, pero no pudo recuperarse."
+                                )
+                        );
 
-
-        return obtenerMovimiento(
-                resultado
-        );
+        return convertirAResponse(detalle);
     }
-
 
     /* =========================================================
        MARCAR COMO PAGADO
@@ -1223,5 +1243,47 @@ public class MovimientoRepository {
         }
 
         return ((Number) valor).longValue();
+    }
+
+    private MovimientoResponse convertirAResponse(
+            MovimientoDetalleResponse detalle
+    ) {
+
+        return new MovimientoResponse(
+
+                detalle.id(),
+
+                detalle.tipoMovimiento(),
+                detalle.tipoMovimientoDescripcion(),
+
+                detalle.categoriaId(),
+                detalle.categoria(),
+
+                detalle.fechaMovimiento(),
+                detalle.fechaProyectada(),
+                detalle.fechaPago(),
+
+                detalle.cancelado(),
+
+                detalle.descripcion(),
+                detalle.monto(),
+
+                detalle.medioPago(),
+                detalle.medioPagoDescripcion(),
+
+                detalle.tipoComprobante(),
+                detalle.tipoComprobanteDescripcion(),
+
+                detalle.moneda(),
+                detalle.monedaDescripcion(),
+                detalle.monedaAbreviatura(),
+
+                detalle.origenRegistro(),
+                detalle.origenRegistroDescripcion(),
+
+                detalle.observacion(),
+
+                detalle.activo()
+        );
     }
 }
