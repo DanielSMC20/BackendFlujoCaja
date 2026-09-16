@@ -1,11 +1,6 @@
 package com.flujocaja.flujo_caja_api.movimiento.controlador;
 
-import com.flujocaja.flujo_caja_api.movimiento.dto.MovimientoActualizarRequest;
-import com.flujocaja.flujo_caja_api.movimiento.dto.MovimientoAnularRequest;
-import com.flujocaja.flujo_caja_api.movimiento.dto.MovimientoCancelarRequest;
-import com.flujocaja.flujo_caja_api.movimiento.dto.MovimientoCrearRequest;
-import com.flujocaja.flujo_caja_api.movimiento.dto.MovimientoDetalleResponse;
-import com.flujocaja.flujo_caja_api.movimiento.dto.MovimientoResponse;
+import com.flujocaja.flujo_caja_api.movimiento.dto.*;
 import com.flujocaja.flujo_caja_api.movimiento.servicio.MovimientoService;
 
 import jakarta.validation.Valid;
@@ -160,27 +155,17 @@ public class MovimientoController {
        ========================================================= */
 
     @PatchMapping("/{movimientoId}/pagar")
-    public ResponseEntity<MovimientoResponse> marcarComoPagado(
-
-            @PathVariable
-            Long movimientoId,
-
-            @Valid
-            @RequestBody
-            MovimientoCancelarRequest request
+    public ResponseEntity<MovimientoDetalleResponse> marcarComoPagado(
+            @PathVariable Long movimientoId,
+            @Valid @RequestBody MovimientoPagoRequest request
     ) {
-
         return ResponseEntity.ok(
-
                 movimientoService.marcarComoPagado(
-
                         movimientoId,
-
                         request
                 )
         );
     }
-
 
     /* =========================================================
        ANULAR MOVIMIENTO

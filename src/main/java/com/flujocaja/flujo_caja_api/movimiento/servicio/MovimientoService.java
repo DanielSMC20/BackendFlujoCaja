@@ -4,7 +4,7 @@ import com.flujocaja.flujo_caja_api.comprobante.repositorio.ComprobanteRepositor
 import com.flujocaja.flujo_caja_api.comun.excepcion.RecursoNoEncontradoException;
 import com.flujocaja.flujo_caja_api.movimiento.dto.MovimientoActualizarRequest;
 import com.flujocaja.flujo_caja_api.movimiento.dto.MovimientoAnularRequest;
-import com.flujocaja.flujo_caja_api.movimiento.dto.MovimientoCancelarRequest;
+import com.flujocaja.flujo_caja_api.movimiento.dto.MovimientoPagoRequest;
 import com.flujocaja.flujo_caja_api.movimiento.dto.MovimientoCrearRequest;
 import com.flujocaja.flujo_caja_api.movimiento.dto.MovimientoDetalleResponse;
 import com.flujocaja.flujo_caja_api.movimiento.dto.MovimientoResponse;
@@ -450,31 +450,30 @@ public class MovimientoService {
     @PreAuthorize(
             "hasAnyRole('ADMINISTRADOR','CONTADOR','OPERADOR')"
     )
-    public MovimientoResponse marcarComoPagado(
+    public MovimientoDetalleResponse marcarComoPagado(
             Long movimientoId,
-            MovimientoCancelarRequest request
+            MovimientoPagoRequest request
     ) {
+        if (movimientoId == null || movimientoId <= 0) {
+            throw new IllegalArgumentException(
+                    "El movimiento es obligatorio."
+            );
+        }
 
-        if (
-                request.fechaPago() == null
-        ) {
-
+        if (request == null || request.fechaPago() == null) {
             throw new IllegalArgumentException(
                     "La fecha de pago es obligatoria."
             );
         }
 
-
-        return movimientoRepository.marcarComoPagado(
-
+        movimientoRepository.marcarComoPagado(
                 contextoSeguridad.empresaId(),
-
                 movimientoId,
-
                 request.fechaPago(),
-
                 contextoSeguridad.usuarioId()
         );
+
+        return obtenerPorId(movimientoId);
     }
 
 

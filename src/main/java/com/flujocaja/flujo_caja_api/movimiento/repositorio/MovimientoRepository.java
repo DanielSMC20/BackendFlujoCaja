@@ -317,39 +317,26 @@ public class MovimientoRepository {
            ===================================================== */
 
         this.paMovimientoUpdCancelar =
-                new SimpleJdbcCall(
-                        dataSource
-                )
-
-                        .withProcedureName(
-                                "PA_Movimiento_Upd_Cancelar"
-                        )
+                new SimpleJdbcCall(dataSource)
+                        .withProcedureName("PA_Movimiento_Upd_Cancelar")
                         .withoutProcedureColumnMetaDataAccess()
                         .declareParameters(
-
-                                new SqlParameter(
-                                        "nEmpresaId",
-                                        Types.INTEGER
-                                ),
-
                                 new SqlParameter(
                                         "nMovimientoId",
                                         Types.BIGINT
                                 ),
-
+                                new SqlParameter(
+                                        "nEmpresaId",
+                                        Types.INTEGER
+                                ),
                                 new SqlParameter(
                                         "dFechaPago",
                                         Types.DATE
                                 ),
-
                                 new SqlParameter(
-                                        "nUsuarioModificacionId",
+                                        "nUsuarioId",
                                         Types.BIGINT
                                 )
-                        )
-                        .returningResultSet(
-                                "movimiento",
-                                movimientoMapper
                         );
 
 
@@ -773,54 +760,36 @@ public class MovimientoRepository {
        MARCAR COMO PAGADO
        ========================================================= */
 
-    public MovimientoResponse marcarComoPagado(
-
+    public void marcarComoPagado(
             Integer empresaId,
-
             Long movimientoId,
-
             LocalDate fechaPago,
-
             Long usuarioId
     ) {
-
         MapSqlParameterSource parametros =
                 new MapSqlParameterSource()
-
-                        .addValue(
-                                "nEmpresaId",
-                                empresaId,
-                                Types.INTEGER
-                        )
-
                         .addValue(
                                 "nMovimientoId",
                                 movimientoId,
                                 Types.BIGINT
                         )
-
+                        .addValue(
+                                "nEmpresaId",
+                                empresaId,
+                                Types.INTEGER
+                        )
                         .addValue(
                                 "dFechaPago",
                                 fechaPago,
                                 Types.DATE
                         )
-
                         .addValue(
-                                "nUsuarioModificacionId",
+                                "nUsuarioId",
                                 usuarioId,
                                 Types.BIGINT
                         );
 
-
-        Map<String, Object> resultado =
-                paMovimientoUpdCancelar.execute(
-                        parametros
-                );
-
-
-        return obtenerMovimiento(
-                resultado
-        );
+        paMovimientoUpdCancelar.execute(parametros);
     }
 
 
