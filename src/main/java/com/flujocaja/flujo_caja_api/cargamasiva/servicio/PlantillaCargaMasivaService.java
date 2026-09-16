@@ -566,7 +566,8 @@ public class PlantillaCargaMasivaService {
                 ),
                 COLUMNA_FECHA,
                 "Fecha no válida",
-                "Ingresa una fecha válida con el formato día/mes/año."
+                "Ingresa una fecha válida con el formato día/mes/año.",
+                false
         );
 
 
@@ -617,8 +618,9 @@ public class PlantillaCargaMasivaService {
                         NOMBRE_RANGO_CATEGORIAS
                 ),
                 COLUMNA_CATEGORIA,
-                "Categoría no válida",
-                "Selecciona una categoría activa de la lista."
+                "Clasificador no válido",
+                "Selecciona un clasificador activo de la lista.",
+                false
         );
 
 
