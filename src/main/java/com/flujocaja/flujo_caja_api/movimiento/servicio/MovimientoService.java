@@ -381,15 +381,17 @@ public class MovimientoService {
         MovimientoResponse movimiento =
                 movimientoRepository.actualizar(
 
+                        movimientoId,
+
                         empresaId,
 
-                        movimientoId,
+                        existente.tipoMovimiento(),
 
                         request.categoriaId(),
 
                         estado.fechaMovimiento(),
 
-                        estado.fechaProyectada(),
+                        existente.cancelado(),
 
                         request.descripcion().trim(),
 
@@ -400,6 +402,8 @@ public class MovimientoService {
                         request.tipoComprobante(),
 
                         request.moneda(),
+
+                        existente.origenRegistro(),
 
                         request.observacion(),
 
