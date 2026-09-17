@@ -140,6 +140,8 @@ public class PlantillaCargaMasivaService {
             );
 
 
+
+
             XSSFSheet hojaClasificadores =
                     obtenerHoja(
                             libro,
@@ -588,9 +590,9 @@ public class PlantillaCargaMasivaService {
                 ),
                 COLUMNA_DESCRIPCION,
                 "Descripción no válida",
-                "La descripción debe contener entre 1 y 150 caracteres."
+                "La descripción debe contener entre 1 y 150 caracteres.",
+                false
         );
-
 
         /*
          * MONTO
@@ -606,7 +608,8 @@ public class PlantillaCargaMasivaService {
                 ),
                 COLUMNA_MONTO,
                 "Monto no válido",
-                "El monto debe ser numérico y mayor que cero."
+                "El monto debe ser numérico y mayor que cero.",
+                false
         );
 
 
