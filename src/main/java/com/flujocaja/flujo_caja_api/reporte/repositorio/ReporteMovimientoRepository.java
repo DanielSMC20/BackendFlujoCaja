@@ -227,7 +227,7 @@ public class ReporteMovimientoRepository {
 
                                 new SqlParameter(
                                         "bCancelado",
-                                        Types.BIT
+                                        Types.TINYINT
                                 ),
 
                                 new SqlParameter(
@@ -237,7 +237,7 @@ public class ReporteMovimientoRepository {
 
                                 new SqlParameter(
                                         "bIncluirAnulados",
-                                        Types.BIT
+                                        Types.TINYINT
                                 )
                         )
 
@@ -300,8 +300,10 @@ public class ReporteMovimientoRepository {
 
                         .addValue(
                                 "bCancelado",
-                                cancelado,
-                                Types.BIT
+                                cancelado == null
+                                        ? null
+                                        : cancelado ? 1 : 0,
+                                Types.TINYINT
                         )
 
                         .addValue(
@@ -312,8 +314,10 @@ public class ReporteMovimientoRepository {
 
                         .addValue(
                                 "bIncluirAnulados",
-                                incluirAnulados,
-                                Types.BIT
+                                Boolean.TRUE.equals(incluirAnulados)
+                                        ? 1
+                                        : 0,
+                                Types.TINYINT
                         );
 
 
