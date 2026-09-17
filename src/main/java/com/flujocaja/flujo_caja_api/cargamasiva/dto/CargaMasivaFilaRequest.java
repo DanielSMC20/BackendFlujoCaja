@@ -1,8 +1,11 @@
 package com.flujocaja.flujo_caja_api.cargamasiva.dto;
 
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
@@ -11,41 +14,32 @@ import java.time.LocalDate;
 public record CargaMasivaFilaRequest(
 
         @NotNull
+        @Positive
         Integer numeroRegistro,
 
         @NotNull
+        @Positive
         Integer filaExcel,
 
-        @NotNull(
-                message = "La fecha es obligatoria."
-        )
-        LocalDate fecha,
+        @NotNull
+        LocalDate fechaMovimiento,
 
-        @NotBlank(
-                message = "El dato es obligatorio."
-        )
+        @NotNull
+        @Positive
+        Integer categoriaId,
+
+        @NotBlank
         @Size(max = 150)
-        String dato,
+        String descripcion,
 
-        @NotNull(
-                message = "El precio es obligatorio."
-        )
-        @DecimalMin(
-                value = "0.01",
-                message = "El precio debe ser mayor a cero."
-        )
-        BigDecimal precio,
+        @NotNull
+        @DecimalMin(value = "0.01")
+        BigDecimal monto,
 
-        @NotBlank(
-                message = "El clasificador es obligatorio."
-        )
-        @Size(max = 100)
-        String clasificador,
-
-        @NotNull(
-                message = "El estado cancelado es obligatorio."
-        )
-        Boolean cancelado
+        @NotNull
+        @Min(0)
+        @Max(1)
+        Integer bCancelado
 
 ) {
 }

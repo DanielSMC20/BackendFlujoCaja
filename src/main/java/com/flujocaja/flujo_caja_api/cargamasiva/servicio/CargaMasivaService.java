@@ -10,10 +10,13 @@ import org.springframework.stereotype.Service;
 
 import tools.jackson.databind.json.JsonMapper;
 
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.LocalDate;
 import java.util.HexFormat;
+import java.util.List;
 
 @Service
 public class CargaMasivaService {
@@ -49,13 +52,40 @@ public class CargaMasivaService {
             CargaMasivaRequest request
     ) {
 
-        /*
-         * Contiene las filas que Angular validó
-         * y confirmó para registrar.
-         */
+        List<MovimientoCargaProcedimiento> movimientos =
+                request.filas()
+                        .stream()
+                        .map(fila ->
+                                new MovimientoCargaProcedimiento(
+
+                                        fila.numeroRegistro(),
+                                        fila.filaExcel(),
+
+                                        fila.fechaMovimiento(),
+                                        fila.categoriaId(),
+
+                                        fila.descripcion().trim(),
+                                        fila.monto(),
+
+                                        9, // No especificado
+                                        1, // Soles
+                                        5, // Sin comprobante
+
+                                        null,
+                                        null,
+                                        null,
+                                        null,
+                                        null,
+                                        null,
+
+                                        fila.bCancelado()
+                                )
+                        )
+                        .toList();
+
         String json =
                 jsonMapper.writeValueAsString(
-                        request.filas()
+                        movimientos
                 );
 
 
@@ -98,7 +128,33 @@ public class CargaMasivaService {
         );
     }
 
+    private record MovimientoCargaProcedimiento(
 
+            Integer numeroRegistro,
+            Integer filaExcel,
+
+            LocalDate fechaMovimiento,
+            Integer categoriaId,
+
+            String descripcion,
+            BigDecimal monto,
+
+            Integer medioPago,
+            Integer moneda,
+            Integer tipoComprobante,
+
+            LocalDate fechaComprobante,
+            String serieComprobante,
+            String numeroComprobante,
+            String documentoEmisor,
+            String razonSocialEmisor,
+
+            String observacion,
+
+            Integer bCancelado
+
+    ) {
+    }
     private String calcularHash(
             String contenido
     ) {
