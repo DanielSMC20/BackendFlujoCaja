@@ -102,23 +102,10 @@ public class CargaMasivaRepository {
                     );
 
 
-    private final RowMapper<CargaMasivaErrorResponse> errorMapper =
+    private final RowMapper<Long> movimientoMapper =
             (rs, rowNum) ->
-                    new CargaMasivaErrorResponse(
-
-                            rs.getObject(
-                                    "nNumeroRegistro",
-                                    Integer.class
-                            ),
-
-                            rs.getObject(
-                                    "nFilaExcel",
-                                    Integer.class
-                            ),
-
-                            rs.getString(
-                                    "cError"
-                            )
+                    rs.getLong(
+                            "nMovimientoId"
                     );
 
 
@@ -128,7 +115,6 @@ public class CargaMasivaRepository {
 
         this.paCargaMasiva =
                 new SimpleJdbcCall(dataSource)
-
 
                         .withProcedureName(
                                 "PA_Movimiento_Ins_CargaMasiva"
@@ -145,7 +131,7 @@ public class CargaMasivaRepository {
 
                                 new SqlParameter(
                                         "cNombreArchivo",
-                                        Types.NVARCHAR
+                                        Types.VARCHAR
                                 ),
 
                                 new SqlParameter(
@@ -154,13 +140,23 @@ public class CargaMasivaRepository {
                                 ),
 
                                 new SqlParameter(
-                                        "nUsuarioRegistroId",
-                                        Types.BIGINT
+                                        "nTotalFilas",
+                                        Types.INTEGER
                                 ),
 
                                 new SqlParameter(
-                                        "cJson",
-                                        Types.LONGNVARCHAR
+                                        "jsonMovimientos",
+                                        Types.LONGVARCHAR
+                                ),
+
+                                new SqlParameter(
+                                        "cObservacion",
+                                        Types.VARCHAR
+                                ),
+
+                                new SqlParameter(
+                                        "nUsuarioId",
+                                        Types.BIGINT
                                 )
                         )
 
@@ -170,8 +166,8 @@ public class CargaMasivaRepository {
                         )
 
                         .returningResultSet(
-                                "errores",
-                                errorMapper
+                                "movimientos",
+                                movimientoMapper
                         );
     }
 
@@ -182,7 +178,9 @@ public class CargaMasivaRepository {
             Long usuarioId,
             String nombreArchivo,
             String hashCarga,
-            String json
+            Integer totalFilas,
+            String json,
+            String observacion
     ) {
 
         MapSqlParameterSource parametros =
@@ -197,7 +195,7 @@ public class CargaMasivaRepository {
                         .addValue(
                                 "cNombreArchivo",
                                 nombreArchivo,
-                                Types.NVARCHAR
+                                Types.VARCHAR
                         )
 
                         .addValue(
@@ -207,15 +205,27 @@ public class CargaMasivaRepository {
                         )
 
                         .addValue(
-                                "nUsuarioRegistroId",
-                                usuarioId,
-                                Types.BIGINT
+                                "nTotalFilas",
+                                totalFilas,
+                                Types.INTEGER
                         )
 
                         .addValue(
-                                "cJson",
+                                "jsonMovimientos",
                                 json,
-                                Types.LONGNVARCHAR
+                                Types.LONGVARCHAR
+                        )
+
+                        .addValue(
+                                "cObservacion",
+                                observacion,
+                                Types.VARCHAR
+                        )
+
+                        .addValue(
+                                "nUsuarioId",
+                                usuarioId,
+                                Types.BIGINT
                         );
 
 
@@ -233,12 +243,15 @@ public class CargaMasivaRepository {
                         );
 
 
-        List<CargaMasivaErrorResponse> errores =
-                (List<CargaMasivaErrorResponse>)
+        List<Long> movimientosCreados =
+                (List<Long>)
                         resultado.getOrDefault(
-                                "errores",
+                                "movimientos",
                                 List.of()
                         );
+
+        List<CargaMasivaErrorResponse> errores =
+                List.of();
 
 
         if (resumenLista.isEmpty()) {

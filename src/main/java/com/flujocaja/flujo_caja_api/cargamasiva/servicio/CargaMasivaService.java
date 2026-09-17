@@ -50,12 +50,9 @@ public class CargaMasivaService {
     ) {
 
         /*
-         * Solo serializamos las filas.
-         *
-         * empresaId y usuarioId jamás vienen
-         * desde Angular.
+         * Contiene las filas que Angular validó
+         * y confirmó para registrar.
          */
-
         String json =
                 jsonMapper.writeValueAsString(
                         request.filas()
@@ -63,15 +60,24 @@ public class CargaMasivaService {
 
 
         /*
-         * SHA-256 calculado en backend.
-         *
-         * Angular no decide el hash.
+         * En el contrato actual, todas las filas
+         * recibidas son filas válidas.
          */
+        int totalFilas =
+                request.filas().size();
 
+
+        /*
+         * SHA-256 del contenido normalizado.
+         */
         String hashCarga =
                 calcularHash(
                         json
                 );
+
+
+        String observacion =
+                "Carga masiva de egresos desde Excel.";
 
 
         return cargaMasivaRepository.procesar(
@@ -84,7 +90,11 @@ public class CargaMasivaService {
 
                 hashCarga,
 
-                json
+                totalFilas,
+
+                json,
+
+                observacion
         );
     }
 
