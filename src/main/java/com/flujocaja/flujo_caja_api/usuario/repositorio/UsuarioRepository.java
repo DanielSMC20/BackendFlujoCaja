@@ -368,14 +368,20 @@ public class UsuarioRepository {
 
         this.paRoles =
                 new SimpleJdbcCall(dataSource)
-
-
                         .withProcedureName(
                                 "PA_Rol_Sel_Gestion"
                         )
-
                         .withoutProcedureColumnMetaDataAccess()
-
+                        .declareParameters(
+                                new SqlParameter(
+                                        "bActivo",
+                                        Types.TINYINT
+                                ),
+                                new SqlParameter(
+                                        "cBuscar",
+                                        Types.VARCHAR
+                                )
+                        )
                         .returningResultSet(
                                 "roles",
                                 rolMapper
@@ -644,9 +650,23 @@ public class UsuarioRepository {
     @SuppressWarnings("unchecked")
     public List<RolGestionResponse> listarRoles() {
 
-        Map<String, Object> resultado =
-                paRoles.execute();
+        MapSqlParameterSource parametros =
+                new MapSqlParameterSource()
+                        .addValue(
+                                "bActivo",
+                                1,
+                                Types.TINYINT
+                        )
+                        .addValue(
+                                "cBuscar",
+                                null,
+                                Types.VARCHAR
+                        );
 
+        Map<String, Object> resultado =
+                paRoles.execute(
+                        parametros
+                );
 
         return (List<RolGestionResponse>)
                 resultado.getOrDefault(
