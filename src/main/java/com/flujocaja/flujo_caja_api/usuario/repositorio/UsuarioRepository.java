@@ -190,51 +190,40 @@ public class UsuarioRepository {
 
         this.paCrear =
                 new SimpleJdbcCall(dataSource)
-
                         .withProcedureName(
-                                "PA_UsuarioEmpresa_Ins"
+                                "PA_Usuario_Ins_GestionEmpresa"
                         )
-
                         .withoutProcedureColumnMetaDataAccess()
-
                         .declareParameters(
-
                                 new SqlParameter(
                                         "nEmpresaId",
                                         Types.INTEGER
                                 ),
-
                                 new SqlParameter(
                                         "nUsuarioAdministradorId",
                                         Types.BIGINT
                                 ),
-
                                 new SqlParameter(
                                         "cCorreo",
                                         Types.VARCHAR
                                 ),
-
                                 new SqlParameter(
                                         "cNombres",
-                                        Types.NVARCHAR
+                                        Types.VARCHAR
                                 ),
-
                                 new SqlParameter(
                                         "cApellidos",
-                                        Types.NVARCHAR
+                                        Types.VARCHAR
                                 ),
-
                                 new SqlParameter(
                                         "cPasswordHash",
                                         Types.VARCHAR
                                 ),
-
                                 new SqlParameter(
                                         "nRolId",
                                         Types.SMALLINT
                                 )
                         )
-
                         .returningResultSet(
                                 "usuario",
                                 usuarioMapper

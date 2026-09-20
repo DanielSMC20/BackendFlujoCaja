@@ -481,9 +481,7 @@ public class MovimientoService {
        ANULAR
        ========================================================= */
 
-    @PreAuthorize(
-            "hasAnyRole('ADMINISTRADOR','CONTADOR','OPERADOR')"
-    )
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public MovimientoResponse anular(
             Long movimientoId,
             MovimientoAnularRequest request
