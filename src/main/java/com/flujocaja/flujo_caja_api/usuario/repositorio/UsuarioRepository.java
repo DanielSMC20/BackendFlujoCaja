@@ -148,8 +148,13 @@ public class UsuarioRepository {
                                 ),
 
                                 new SqlParameter(
-                                        "bSoloActivos",
+                                        "bActivo",
                                         Types.BIT
+                                ),
+
+                                new SqlParameter(
+                                        "cBusqueda",
+                                        Types.VARCHAR
                                 )
                         )
 
@@ -396,12 +401,17 @@ public class UsuarioRepository {
                                 )
 
                                 .addValue(
-                                        "bSoloActivos",
+                                        "bActivo",
                                         soloActivos,
                                         Types.BIT
                                 )
-                );
 
+                                .addValue(
+                                        "cBusqueda",
+                                        null,
+                                        Types.VARCHAR
+                                )
+                );
 
         return (List<UsuarioEmpresaResponse>)
                 resultado.getOrDefault(
