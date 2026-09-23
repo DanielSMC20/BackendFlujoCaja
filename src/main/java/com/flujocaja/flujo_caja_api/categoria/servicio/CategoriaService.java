@@ -48,28 +48,23 @@ public class CategoriaService {
     }
 
     @PreAuthorize(
-            "hasAnyRole('ADMINISTRADOR', 'CONTADOR', 'OPERADOR')"
+            "hasRole('ADMINISTRADOR')"
     )
     public CategoriaResponse registrar(
             CategoriaCrearRequest request
     ) {
 
         return categoriaRepository.registrar(
-
                 contextoSeguridad.empresaId(),
-
                 request.tipoMovimiento(),
-
                 request.nombre(),
-
                 request.descripcion(),
-
                 contextoSeguridad.usuarioId()
         );
     }
 
     @PreAuthorize(
-            "hasAnyRole('ADMINISTRADOR', 'CONTADOR', 'OPERADOR')"
+            "hasRole('ADMINISTRADOR')"
     )
     public CategoriaResponse actualizar(
             Integer categoriaId,
@@ -77,17 +72,11 @@ public class CategoriaService {
     ) {
 
         return categoriaRepository.actualizar(
-
                 contextoSeguridad.empresaId(),
-
                 categoriaId,
-
                 request.nombre(),
-
                 request.descripcion(),
-
                 request.activo(),
-
                 contextoSeguridad.usuarioId()
         );
     }

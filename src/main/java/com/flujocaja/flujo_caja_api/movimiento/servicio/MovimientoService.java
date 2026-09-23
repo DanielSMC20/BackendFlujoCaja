@@ -481,14 +481,33 @@ public class MovimientoService {
        ANULAR
        ========================================================= */
 
-    @PreAuthorize("hasRole('ADMINISTRADOR')")
-    public MovimientoResponse anular(
+    @Transactional
+    @PreAuthorize(
+            "hasAnyRole('ADMINISTRADOR','CONTADOR')"
+    )
+    public void anular(
+
             Long movimientoId,
+
             MovimientoAnularRequest request
     ) {
 
         if (
-                request.motivo() == null
+                movimientoId == null
+                        ||
+                        movimientoId <= 0
+        ) {
+
+            throw new IllegalArgumentException(
+                    "El movimiento es obligatorio."
+            );
+        }
+
+
+        if (
+                request == null
+                        ||
+                        request.motivo() == null
                         ||
                         request.motivo().isBlank()
         ) {
@@ -499,7 +518,7 @@ public class MovimientoService {
         }
 
 
-        return movimientoRepository.anular(
+        movimientoRepository.anular(
 
                 contextoSeguridad.empresaId(),
 

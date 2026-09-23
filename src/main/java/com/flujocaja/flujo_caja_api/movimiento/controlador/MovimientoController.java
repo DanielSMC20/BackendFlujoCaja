@@ -172,7 +172,7 @@ public class MovimientoController {
        ========================================================= */
 
     @PatchMapping("/{movimientoId}/anular")
-    public ResponseEntity<MovimientoResponse> anular(
+    public ResponseEntity<Void> anular(
 
             @PathVariable
             Long movimientoId,
@@ -182,14 +182,14 @@ public class MovimientoController {
             MovimientoAnularRequest request
     ) {
 
-        return ResponseEntity.ok(
-
-                movimientoService.anular(
-
-                        movimientoId,
-
-                        request
-                )
+        movimientoService.anular(
+                movimientoId,
+                request
         );
+
+
+        return ResponseEntity
+                .noContent()
+                .build();
     }
 }

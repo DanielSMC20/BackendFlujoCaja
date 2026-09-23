@@ -2,7 +2,8 @@ package com.flujocaja.flujo_caja_api.configuracion;
 
 import com.flujocaja.flujo_caja_api.seguridad.filtro.CambioPasswordObligatorioFilter;
 import com.flujocaja.flujo_caja_api.seguridad.filtro.JwtAuthenticationFilter;
-
+import com.flujocaja.flujo_caja_api.seguridad.manejador.RestAccessDeniedHandler;
+import com.flujocaja.flujo_caja_api.seguridad.manejador.RestAuthenticationEntryPoint;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,13 +28,23 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CambioPasswordObligatorioFilter cambioPasswordObligatorioFilter;
+    private final RestAuthenticationEntryPoint    restAuthenticationEntryPoint;
+
+    private final RestAccessDeniedHandler   restAccessDeniedHandler;
 
     public SecurityConfig(
             JwtAuthenticationFilter jwtAuthenticationFilter,
-            CambioPasswordObligatorioFilter cambioPasswordObligatorioFilter
+            CambioPasswordObligatorioFilter cambioPasswordObligatorioFilter,
+             RestAuthenticationEntryPoint restAuthenticationEntryPoint,
+
+            RestAccessDeniedHandler restAccessDeniedHandler
+
     ) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.cambioPasswordObligatorioFilter = cambioPasswordObligatorioFilter;
+        this.restAuthenticationEntryPoint = restAuthenticationEntryPoint;
+
+        this.restAccessDeniedHandler = restAccessDeniedHandler;
     }
 
     @Bean
@@ -75,7 +86,10 @@ public class SecurityConfig {
         );
 
         configuration.setExposedHeaders(
-                List.of(HttpHeaders.CONTENT_DISPOSITION)
+                List.of(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        "X-Access-Token"
+                )
         );
 
         configuration.setAllowCredentials(false);
@@ -113,7 +127,15 @@ public class SecurityConfig {
                                 SessionCreationPolicy.STATELESS
                         )
                 )
-
+                .exceptionHandling(exceptions ->
+                        exceptions
+                                .authenticationEntryPoint(
+                                        restAuthenticationEntryPoint
+                                )
+                                .accessDeniedHandler(
+                                        restAccessDeniedHandler
+                                )
+                )
                 .authorizeHttpRequests(auth ->
                         auth
                                 .requestMatchers(

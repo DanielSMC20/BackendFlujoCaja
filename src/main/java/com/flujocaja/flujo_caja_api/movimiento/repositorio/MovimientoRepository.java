@@ -340,15 +340,12 @@ public class MovimientoRepository {
                         );
 
 
-        /* =====================================================
-           ANULAR
-           ===================================================== */
+
 
         this.paMovimientoUpdAnular =
                 new SimpleJdbcCall(
                         dataSource
                 )
-
                         .withProcedureName(
                                 "PA_Movimiento_Upd_Anular"
                         )
@@ -356,28 +353,24 @@ public class MovimientoRepository {
                         .declareParameters(
 
                                 new SqlParameter(
-                                        "nEmpresaId",
+                                        "p_nMovimientoId",
+                                        Types.BIGINT
+                                ),
+
+                                new SqlParameter(
+                                        "p_nEmpresaId",
                                         Types.INTEGER
                                 ),
 
                                 new SqlParameter(
-                                        "nMovimientoId",
-                                        Types.BIGINT
+                                        "p_cMotivoAnulacion",
+                                        Types.VARCHAR
                                 ),
 
                                 new SqlParameter(
-                                        "cMotivoAnulacion",
-                                        Types.NVARCHAR
-                                ),
-
-                                new SqlParameter(
-                                        "nUsuarioAnulacionId",
+                                        "p_nUsuarioId",
                                         Types.BIGINT
                                 )
-                        )
-                        .returningResultSet(
-                                "movimiento",
-                                movimientoMapper
                         );
     }
 
@@ -797,7 +790,7 @@ public class MovimientoRepository {
        ANULAR
        ========================================================= */
 
-    public MovimientoResponse anular(
+    public void anular(
 
             Integer empresaId,
 
@@ -812,38 +805,32 @@ public class MovimientoRepository {
                 new MapSqlParameterSource()
 
                         .addValue(
-                                "nEmpresaId",
-                                empresaId,
-                                Types.INTEGER
-                        )
-
-                        .addValue(
-                                "nMovimientoId",
+                                "p_nMovimientoId",
                                 movimientoId,
                                 Types.BIGINT
                         )
 
                         .addValue(
-                                "cMotivoAnulacion",
-                                motivo,
-                                Types.NVARCHAR
+                                "p_nEmpresaId",
+                                empresaId,
+                                Types.INTEGER
                         )
 
                         .addValue(
-                                "nUsuarioAnulacionId",
+                                "p_cMotivoAnulacion",
+                                motivo,
+                                Types.VARCHAR
+                        )
+
+                        .addValue(
+                                "p_nUsuarioId",
                                 usuarioId,
                                 Types.BIGINT
                         );
 
 
-        Map<String, Object> resultado =
-                paMovimientoUpdAnular.execute(
-                        parametros
-                );
-
-
-        return obtenerMovimiento(
-                resultado
+        paMovimientoUpdAnular.execute(
+                parametros
         );
     }
 

@@ -128,6 +128,20 @@ public class UsuarioService {
             UsuarioActualizarRequest request
     ) {
 
+        if (
+                usuarioId != null
+                        &&
+                        usuarioId.equals(
+                                contextoSeguridad.usuarioId()
+                        )
+        ) {
+
+            throw new IllegalArgumentException(
+                    "No puedes modificar tu propio rol desde la administración de usuarios."
+            );
+        }
+
+
         validarRolGestionable(
                 request.rolId()
         );
@@ -151,11 +165,28 @@ public class UsuarioService {
         );
     }
 
-
     public UsuarioEmpresaResponse cambiarEstado(
             Long usuarioId,
             UsuarioEstadoRequest request
     ) {
+
+        if (
+                usuarioId != null
+                        &&
+                        usuarioId.equals(
+                                contextoSeguridad.usuarioId()
+                        )
+                        &&
+                        Boolean.FALSE.equals(
+                                request.activo()
+                        )
+        ) {
+
+            throw new IllegalArgumentException(
+                    "No puedes desactivar tu propia cuenta."
+            );
+        }
+
 
         return usuarioRepository.cambiarEstado(
 
