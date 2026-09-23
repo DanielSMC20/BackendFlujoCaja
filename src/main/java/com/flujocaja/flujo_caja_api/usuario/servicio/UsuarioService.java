@@ -47,12 +47,8 @@ public class UsuarioService {
     ) {
 
         return usuarioRepository.listar(
-
                 contextoSeguridad.empresaId(),
-
-                Boolean.TRUE.equals(
-                        soloActivos
-                )
+                soloActivos
         );
     }
 

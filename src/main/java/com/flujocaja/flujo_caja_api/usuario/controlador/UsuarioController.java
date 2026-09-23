@@ -37,13 +37,12 @@ public class UsuarioController {
     public ResponseEntity<List<UsuarioEmpresaResponse>> listar(
 
             @RequestParam(
-                    defaultValue = "false"
+                    required = false
             )
             Boolean soloActivos
     ) {
 
         return ResponseEntity.ok(
-
                 usuarioService.listar(
                         soloActivos
                 )
