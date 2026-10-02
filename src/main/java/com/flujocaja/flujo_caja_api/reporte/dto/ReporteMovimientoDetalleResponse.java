@@ -39,6 +39,19 @@ public record ReporteMovimientoDetalleResponse(
 
         String observacion,
 
+
+        LocalDate fechaComprobante,
+
+        String serieComprobante,
+
+        String numeroComprobante,
+
+        String documentoEmisor,
+
+        String razonSocialEmisor,
+
+        String archivoXmlNombre,
+
         Boolean activo,
 
         LocalDateTime fechaRegistro,

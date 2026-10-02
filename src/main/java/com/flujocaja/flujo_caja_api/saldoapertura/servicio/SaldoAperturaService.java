@@ -8,14 +8,8 @@ import com.flujocaja.flujo_caja_api.seguridad.servicio.ContextoSeguridad;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
-
 @Service
 public class SaldoAperturaService {
-
-    private static final ZoneId ZONA_HORARIA_PERU =
-            ZoneId.of("America/Lima");
 
     private final SaldoAperturaRepository saldoAperturaRepository;
     private final ContextoSeguridad contextoSeguridad;
@@ -53,13 +47,25 @@ public class SaldoAperturaService {
             SaldoAperturaCrearRequest request
     ) {
 
-        LocalDate fechaApertura =
-                LocalDate.now(ZONA_HORARIA_PERU);
+        Integer empresaId =
+                contextoSeguridad.empresaId();
+
+        boolean yaExiste =
+                saldoAperturaRepository
+                        .obtener(empresaId)
+                        .isPresent();
+
+        if (yaExiste) {
+
+            throw new IllegalArgumentException(
+                    "La empresa ya tiene registrado un saldo de apertura."
+            );
+        }
 
         return saldoAperturaRepository.registrar(
-                contextoSeguridad.empresaId(),
+                empresaId,
                 request.saldoInicial(),
-                fechaApertura,
+                request.fechaApertura(),
                 contextoSeguridad.usuarioId()
         );
     }

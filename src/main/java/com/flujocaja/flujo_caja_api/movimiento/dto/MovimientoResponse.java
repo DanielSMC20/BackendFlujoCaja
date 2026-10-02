@@ -37,6 +37,20 @@ public record MovimientoResponse(
 
         String observacion,
 
+        LocalDate fechaComprobante,
+
+        String serieComprobante,
+
+        String numeroComprobante,
+
+        String documentoEmisor,
+
+        String razonSocialEmisor,
+
+        String archivoXmlNombre,
+
+        String hashXml,
+
         Boolean activo
 
 ) {

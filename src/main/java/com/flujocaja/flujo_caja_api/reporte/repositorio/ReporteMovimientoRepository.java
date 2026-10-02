@@ -160,6 +160,33 @@ public class ReporteMovimientoRepository {
                                 "cObservacion"
                         ),
 
+                rs.getDate("dFechaComprobante") == null
+                        ? null
+                        : rs.getDate(
+                        "dFechaComprobante"
+                ).toLocalDate(),
+
+                        rs.getString(
+                                "cSerieComprobante"
+                        ),
+
+                        rs.getString(
+                                "cNumeroComprobante"
+                        ),
+
+                        rs.getString(
+                                "cDocumentoEmisor"
+                        ),
+
+                        rs.getString(
+                                "cRazonSocialEmisor"
+                        ),
+
+                        rs.getString(
+                                "cArchivoXmlNombre"
+                        ),
+
+
                         rs.getBoolean(
                                 "bActivo"
                         ),

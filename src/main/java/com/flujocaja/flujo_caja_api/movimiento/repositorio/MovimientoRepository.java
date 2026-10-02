@@ -52,6 +52,12 @@ public class MovimientoRepository {
                             rs
                     );
 
+    private final RowMapper<MovimientoResponse> movimientoListadoMapper =
+            (rs, rowNum) ->
+                    mapearMovimientoListado(
+                            rs
+                    );
+
 
     private final RowMapper<MovimientoDetalleResponse> movimientoDetalleMapper =
             (rs, rowNum) ->
@@ -195,7 +201,7 @@ public class MovimientoRepository {
                         )
                         .returningResultSet(
                                 "movimientos",
-                                movimientoMapper
+                                movimientoListadoMapper
                         );
 
 
@@ -964,6 +970,153 @@ public class MovimientoRepository {
                         "cObservacion"
                 ),
 
+                /*
+                 * El mapper básico también lo utilizan
+                 * procedimientos que no devuelven los
+                 * datos del comprobante.
+                 */
+
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+
+                rs.getBoolean(
+                        "bActivo"
+                )
+        );
+    }
+
+    private MovimientoResponse mapearMovimientoListado(
+            ResultSet rs
+    ) throws SQLException {
+
+        return new MovimientoResponse(
+
+                rs.getLong(
+                        "nMovimientoId"
+                ),
+
+                rs.getInt(
+                        "nTipoMovimiento"
+                ),
+
+                rs.getString(
+                        "cTipoMovimiento"
+                ),
+
+                rs.getInt(
+                        "nCategoriaMovimientoId"
+                ),
+
+                rs.getString(
+                        "cCategoria"
+                ),
+
+                obtenerFecha(
+                        rs,
+                        "dFechaMovimiento"
+                ),
+
+                obtenerFecha(
+                        rs,
+                        "dFechaProyectada"
+                ),
+
+                obtenerFecha(
+                        rs,
+                        "dFechaPago"
+                ),
+
+                obtenerBooleanNullable(
+                        rs,
+                        "bCancelado"
+                ),
+
+                rs.getString(
+                        "cDescripcion"
+                ),
+
+                rs.getBigDecimal(
+                        "nMonto"
+                ),
+
+                rs.getInt(
+                        "nMedioPago"
+                ),
+
+                rs.getString(
+                        "cMedioPago"
+                ),
+
+                rs.getInt(
+                        "nTipoComprobante"
+                ),
+
+                rs.getString(
+                        "cTipoComprobante"
+                ),
+
+                rs.getInt(
+                        "nMoneda"
+                ),
+
+                rs.getString(
+                        "cMoneda"
+                ),
+
+                rs.getString(
+                        "cAbreviaturaMoneda"
+                ),
+
+                rs.getInt(
+                        "nOrigenRegistro"
+                ),
+
+                rs.getString(
+                        "cOrigenRegistro"
+                ),
+
+                rs.getString(
+                        "cObservacion"
+                ),
+
+            /* =============================================
+               COMPROBANTE
+               ============================================= */
+
+                obtenerFecha(
+                        rs,
+                        "dFechaComprobante"
+                ),
+
+                rs.getString(
+                        "cSerieComprobante"
+                ),
+
+                rs.getString(
+                        "cNumeroComprobante"
+                ),
+
+                rs.getString(
+                        "cDocumentoEmisor"
+                ),
+
+                rs.getString(
+                        "cRazonSocialEmisor"
+                ),
+
+                rs.getString(
+                        "cArchivoXmlNombre"
+                ),
+
+                rs.getString(
+                        "cHashXml"
+                ),
+
                 rs.getBoolean(
                         "bActivo"
                 )
@@ -1238,6 +1391,13 @@ public class MovimientoRepository {
                 detalle.origenRegistroDescripcion(),
 
                 detalle.observacion(),
+                detalle.fechaComprobante(),
+                detalle.serieComprobante(),
+                detalle.numeroComprobante(),
+                detalle.documentoEmisor(),
+                detalle.razonSocialEmisor(),
+                detalle.archivoXmlNombre(),
+                detalle.hashXml(),
 
                 detalle.activo()
         );
