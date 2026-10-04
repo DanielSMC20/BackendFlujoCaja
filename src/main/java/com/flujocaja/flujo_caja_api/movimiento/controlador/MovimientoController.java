@@ -151,6 +151,30 @@ public class MovimientoController {
 
 
     /* =========================================================
+   REPROGRAMAR FECHA DE EGRESO PROYECTADO
+   ========================================================= */
+
+    @PatchMapping("/{movimientoId}/fecha-proyectada")
+    public ResponseEntity<MovimientoDetalleResponse> reprogramarFechaProyectada(
+
+            @PathVariable
+            Long movimientoId,
+
+            @Valid
+            @RequestBody
+            MovimientoFechaProyectadaRequest request
+    ) {
+
+        return ResponseEntity.ok(
+
+                movimientoService.reprogramarFechaProyectada(
+                        movimientoId,
+                        request
+                )
+        );
+    }
+
+    /* =========================================================
        MARCAR EGRESO COMO PAGADO
        ========================================================= */
 

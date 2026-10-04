@@ -10,7 +10,7 @@ import com.flujocaja.flujo_caja_api.movimiento.dto.MovimientoDetalleResponse;
 import com.flujocaja.flujo_caja_api.movimiento.dto.MovimientoResponse;
 import com.flujocaja.flujo_caja_api.movimiento.repositorio.MovimientoRepository;
 import com.flujocaja.flujo_caja_api.seguridad.servicio.ContextoSeguridad;
-
+import com.flujocaja.flujo_caja_api.movimiento.dto.MovimientoFechaProyectadaRequest;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -264,6 +264,129 @@ public class MovimientoService {
 
 
         return movimiento;
+    }
+
+
+    /* =========================================================
+   REPROGRAMAR FECHA PROYECTADA
+   ========================================================= */
+
+    @Transactional
+    @PreAuthorize(
+            "hasAnyRole('ADMINISTRADOR','CONTADOR','OPERADOR')"
+    )
+    public MovimientoDetalleResponse reprogramarFechaProyectada(
+
+            Long movimientoId,
+
+            MovimientoFechaProyectadaRequest request
+    ) {
+
+        if (
+                movimientoId == null
+                        ||
+                        movimientoId <= 0
+        ) {
+
+            throw new IllegalArgumentException(
+                    "El movimiento es obligatorio."
+            );
+        }
+
+
+        if (
+                request == null
+                        ||
+                        request.fechaProyectada() == null
+        ) {
+
+            throw new IllegalArgumentException(
+                    "La fecha proyectada es obligatoria."
+            );
+        }
+
+
+        Integer empresaId =
+                contextoSeguridad.empresaId();
+
+
+        MovimientoDetalleResponse movimiento =
+                movimientoRepository
+                        .obtenerDetallePorId(
+                                empresaId,
+                                movimientoId
+                        )
+                        .orElseThrow(
+
+                                () ->
+                                        new RecursoNoEncontradoException(
+                                                "El movimiento no existe."
+                                        )
+                        );
+
+
+        if (
+                Boolean.FALSE.equals(
+                        movimiento.activo()
+                )
+        ) {
+
+            throw new IllegalArgumentException(
+                    "Un movimiento anulado no puede ser reprogramado."
+            );
+        }
+
+
+        if (
+                !Integer.valueOf(TIPO_EGRESO)
+                        .equals(
+                                movimiento.tipoMovimiento()
+                        )
+        ) {
+
+            throw new IllegalArgumentException(
+                    "Solo se pueden reprogramar egresos."
+            );
+        }
+
+
+        if (
+                Boolean.TRUE.equals(
+                        movimiento.cancelado()
+                )
+        ) {
+
+            throw new IllegalArgumentException(
+                    "Un egreso pagado no puede ser reprogramado."
+            );
+        }
+
+
+        movimientoRepository
+                .reprogramarFechaProyectada(
+
+                        empresaId,
+
+                        movimientoId,
+
+                        request.fechaProyectada(),
+
+                        contextoSeguridad.usuarioId()
+                );
+
+
+        return movimientoRepository
+                .obtenerDetallePorId(
+                        empresaId,
+                        movimientoId
+                )
+                .orElseThrow(
+
+                        () ->
+                                new RecursoNoEncontradoException(
+                                        "No se pudo recuperar el movimiento actualizado."
+                                )
+                );
     }
 
 

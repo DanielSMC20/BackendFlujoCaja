@@ -35,6 +35,8 @@ public class MovimientoRepository {
 
     private final SimpleJdbcCall paMovimientoSelId;
 
+    private final SimpleJdbcCall paMovimientoUpdFechaProyectada;
+
     private final SimpleJdbcCall paMovimientoUpd;
 
     private final SimpleJdbcCall paMovimientoUpdCancelar;
@@ -378,7 +380,41 @@ public class MovimientoRepository {
                                         Types.BIGINT
                                 )
                         );
+
+        /* =====================================================
+   REPROGRAMAR FECHA PROYECTADA
+   ===================================================== */
+
+        this.paMovimientoUpdFechaProyectada =
+                new SimpleJdbcCall(dataSource)
+                        .withProcedureName(
+                                "PA_Movimiento_Upd_FechaProyectada"
+                        )
+                        .withoutProcedureColumnMetaDataAccess()
+                        .declareParameters(
+
+                                new SqlParameter(
+                                        "p_nMovimientoId",
+                                        Types.BIGINT
+                                ),
+
+                                new SqlParameter(
+                                        "p_nEmpresaId",
+                                        Types.INTEGER
+                                ),
+
+                                new SqlParameter(
+                                        "p_dFechaProyectada",
+                                        Types.DATE
+                                ),
+
+                                new SqlParameter(
+                                        "p_nUsuarioId",
+                                        Types.BIGINT
+                                )
+                        );
     }
+
 
 
     /* =========================================================
@@ -1402,4 +1438,46 @@ public class MovimientoRepository {
                 detalle.activo()
         );
     }
+    public void reprogramarFechaProyectada(
+
+            Integer empresaId,
+            Long movimientoId,
+            LocalDate fechaProyectada,
+            Long usuarioId
+    ) {
+
+        MapSqlParameterSource parametros =
+                new MapSqlParameterSource()
+
+                        .addValue(
+                                "p_nMovimientoId",
+                                movimientoId,
+                                Types.BIGINT
+                        )
+
+                        .addValue(
+                                "p_nEmpresaId",
+                                empresaId,
+                                Types.INTEGER
+                        )
+
+                        .addValue(
+                                "p_dFechaProyectada",
+                                fechaProyectada,
+                                Types.DATE
+                        )
+
+                        .addValue(
+                                "p_nUsuarioId",
+                                usuarioId,
+                                Types.BIGINT
+                        );
+
+
+        paMovimientoUpdFechaProyectada.execute(
+                parametros
+        );
+    }
+
+
 }
