@@ -59,6 +59,18 @@ public class JwtAuthenticationFilter
 
 
     @Override
+    protected boolean shouldNotFilter(
+            HttpServletRequest request
+    ) {
+
+        return request
+                .getRequestURI()
+                .startsWith(
+                        "/api/plataforma/"
+                );
+    }
+
+    @Override
     protected void doFilterInternal(
 
             HttpServletRequest request,
