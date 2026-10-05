@@ -274,7 +274,7 @@ public class SecurityConfig {
 
                         plataformaJwtAuthenticationFilter,
 
-                        JwtAuthenticationFilter.class
+                        UsernamePasswordAuthenticationFilter.class
                 )
 
                 .addFilterBefore(
@@ -288,7 +288,7 @@ public class SecurityConfig {
 
                         cambioPasswordObligatorioFilter,
 
-                        JwtAuthenticationFilter.class
+                        UsernamePasswordAuthenticationFilter.class
                 )
 
                 .build();
