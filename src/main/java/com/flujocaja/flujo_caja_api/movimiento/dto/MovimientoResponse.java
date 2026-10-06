@@ -37,7 +37,13 @@ public record MovimientoResponse(
 
         String observacion,
 
+        /* =========================================================
+           COMPROBANTE
+           ========================================================= */
+
         LocalDate fechaComprobante,
+
+        LocalDate fechaVencimiento,
 
         String serieComprobante,
 
@@ -46,6 +52,30 @@ public record MovimientoResponse(
         String documentoEmisor,
 
         String razonSocialEmisor,
+
+        /* =========================================================
+           DATOS TRIBUTARIOS
+           ========================================================= */
+
+        BigDecimal baseImponible,
+
+        BigDecimal igv,
+
+        BigDecimal inafecto,
+
+        BigDecimal isc,
+
+        BigDecimal icbper,
+
+        BigDecimal exonerado,
+
+        BigDecimal porcentajeIgv,
+
+        BigDecimal tipoCambio,
+
+        /* =========================================================
+           XML
+           ========================================================= */
 
         String archivoXmlNombre,
 

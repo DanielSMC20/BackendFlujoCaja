@@ -1007,25 +1007,36 @@ public class MovimientoRepository {
                 ),
 
                 /*
-                 * El mapper básico también lo utilizan
-                 * procedimientos que no devuelven los
-                 * datos del comprobante.
+                 * Los procedimientos de registro pueden no devolver
+                 * todavía los datos del comprobante porque este se
+                 * registra posteriormente desde MovimientoService.
                  */
 
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
+                null, // fechaComprobante
+                null, // fechaVencimiento
+
+                null, // serieComprobante
+                null, // numeroComprobante
+                null, // documentoEmisor
+                null, // razonSocialEmisor
+
+                null, // baseImponible
+                null, // igv
+                null, // inafecto
+                null, // isc
+                null, // icbper
+                null, // exonerado
+                null, // porcentajeIgv
+                null, // tipoCambio
+
+                null, // archivoXmlNombre
+                null, // hashXml
 
                 rs.getBoolean(
                         "bActivo"
                 )
         );
     }
-
     private MovimientoResponse mapearMovimientoListado(
             ResultSet rs
     ) throws SQLException {
@@ -1120,13 +1131,18 @@ public class MovimientoRepository {
                         "cObservacion"
                 ),
 
-            /* =============================================
+            /* =====================================================
                COMPROBANTE
-               ============================================= */
+               ===================================================== */
 
                 obtenerFecha(
                         rs,
                         "dFechaComprobante"
+                ),
+
+                obtenerFecha(
+                        rs,
+                        "dFechaVencimiento"
                 ),
 
                 rs.getString(
@@ -1144,6 +1160,46 @@ public class MovimientoRepository {
                 rs.getString(
                         "cRazonSocialEmisor"
                 ),
+
+            /* =====================================================
+               DATOS TRIBUTARIOS
+               ===================================================== */
+
+                rs.getBigDecimal(
+                        "nBaseImponible"
+                ),
+
+                rs.getBigDecimal(
+                        "nIgv"
+                ),
+
+                rs.getBigDecimal(
+                        "nInafecto"
+                ),
+
+                rs.getBigDecimal(
+                        "nIsc"
+                ),
+
+                rs.getBigDecimal(
+                        "nIcbper"
+                ),
+
+                rs.getBigDecimal(
+                        "nExonerado"
+                ),
+
+                rs.getBigDecimal(
+                        "nPorcentajeIgv"
+                ),
+
+                rs.getBigDecimal(
+                        "nTipoCambio"
+                ),
+
+            /* =====================================================
+               XML
+               ===================================================== */
 
                 rs.getString(
                         "cArchivoXmlNombre"
@@ -1262,14 +1318,18 @@ public class MovimientoRepository {
                         "bActivo"
                 ),
 
-
-                /* =============================================
-                   COMPROBANTE
-                   ============================================= */
+            /* =====================================================
+               COMPROBANTE
+               ===================================================== */
 
                 obtenerFecha(
                         rs,
                         "dFechaComprobante"
+                ),
+
+                obtenerFecha(
+                        rs,
+                        "dFechaVencimiento"
                 ),
 
                 rs.getString(
@@ -1288,6 +1348,46 @@ public class MovimientoRepository {
                         "cRazonSocialEmisor"
                 ),
 
+            /* =====================================================
+               DATOS TRIBUTARIOS
+               ===================================================== */
+
+                rs.getBigDecimal(
+                        "nBaseImponible"
+                ),
+
+                rs.getBigDecimal(
+                        "nIgv"
+                ),
+
+                rs.getBigDecimal(
+                        "nInafecto"
+                ),
+
+                rs.getBigDecimal(
+                        "nIsc"
+                ),
+
+                rs.getBigDecimal(
+                        "nIcbper"
+                ),
+
+                rs.getBigDecimal(
+                        "nExonerado"
+                ),
+
+                rs.getBigDecimal(
+                        "nPorcentajeIgv"
+                ),
+
+                rs.getBigDecimal(
+                        "nTipoCambio"
+                ),
+
+            /* =====================================================
+               XML
+               ===================================================== */
+
                 rs.getString(
                         "cArchivoXmlNombre"
                 ),
@@ -1295,6 +1395,11 @@ public class MovimientoRepository {
                 rs.getString(
                         "cHashXml"
                 ),
+
+            /* =====================================================
+               AUDITORÍA
+               ===================================================== */
+
                 obtenerLongNullable(
                         rs,
                         "nUsuarioRegistroId"
@@ -1427,11 +1532,25 @@ public class MovimientoRepository {
                 detalle.origenRegistroDescripcion(),
 
                 detalle.observacion(),
+
                 detalle.fechaComprobante(),
+                detalle.fechaVencimiento(),
+
                 detalle.serieComprobante(),
                 detalle.numeroComprobante(),
+
                 detalle.documentoEmisor(),
                 detalle.razonSocialEmisor(),
+
+                detalle.baseImponible(),
+                detalle.igv(),
+                detalle.inafecto(),
+                detalle.isc(),
+                detalle.icbper(),
+                detalle.exonerado(),
+                detalle.porcentajeIgv(),
+                detalle.tipoCambio(),
+
                 detalle.archivoXmlNombre(),
                 detalle.hashXml(),
 

@@ -35,7 +35,14 @@ public record MovimientoActualizarRequest(
         @Size(max = 500)
         String observacion,
 
+
+        /* =========================================================
+           COMPROBANTE
+           ========================================================= */
+
         LocalDate fechaComprobante,
+
+        LocalDate fechaVencimiento,
 
         @Size(max = 20)
         String serieComprobante,
@@ -48,6 +55,40 @@ public record MovimientoActualizarRequest(
 
         @Size(max = 200)
         String razonSocialEmisor,
+
+
+        /* =========================================================
+           DATOS TRIBUTARIOS DEL COMPROBANTE
+           ========================================================= */
+
+        @DecimalMin(value = "0.00")
+        BigDecimal baseImponible,
+
+        @DecimalMin(value = "0.00")
+        BigDecimal igv,
+
+        @DecimalMin(value = "0.00")
+        BigDecimal inafecto,
+
+        @DecimalMin(value = "0.00")
+        BigDecimal isc,
+
+        @DecimalMin(value = "0.00")
+        BigDecimal icbper,
+
+        @DecimalMin(value = "0.00")
+        BigDecimal exonerado,
+
+        @DecimalMin(value = "0.00")
+        BigDecimal porcentajeIgv,
+
+        @DecimalMin(value = "0.00")
+        BigDecimal tipoCambio,
+
+
+        /* =========================================================
+           XML
+           ========================================================= */
 
         @Size(max = 255)
         String archivoXmlNombre,

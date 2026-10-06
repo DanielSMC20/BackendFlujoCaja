@@ -1,8 +1,9 @@
 package com.flujocaja.flujo_caja_api.movimiento.dto;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.Instant;
+import java.time.LocalDate;
+
 public record MovimientoDetalleResponse(
 
         Long id,
@@ -39,7 +40,13 @@ public record MovimientoDetalleResponse(
 
         Boolean activo,
 
+        /* =========================================================
+           COMPROBANTE
+           ========================================================= */
+
         LocalDate fechaComprobante,
+
+        LocalDate fechaVencimiento,
 
         String serieComprobante,
 
@@ -49,11 +56,43 @@ public record MovimientoDetalleResponse(
 
         String razonSocialEmisor,
 
+        /* =========================================================
+           DATOS TRIBUTARIOS
+           ========================================================= */
+
+        BigDecimal baseImponible,
+
+        BigDecimal igv,
+
+        BigDecimal inafecto,
+
+        BigDecimal isc,
+
+        BigDecimal icbper,
+
+        BigDecimal exonerado,
+
+        BigDecimal porcentajeIgv,
+
+        BigDecimal tipoCambio,
+
+        /* =========================================================
+           XML
+           ========================================================= */
+
         String archivoXmlNombre,
 
         String hashXml,
+
+        /* =========================================================
+           AUDITORÍA
+           ========================================================= */
+
         Long usuarioRegistroId,
+
         String usuarioRegistro,
+
         Instant fechaRegistro
+
 ) {
 }

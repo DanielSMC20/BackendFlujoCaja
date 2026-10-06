@@ -7,7 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -27,13 +28,29 @@ import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HexFormat;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 @Service
 public class ComprobanteXmlService {
 
     private static final long TAMANO_MAXIMO =
             5L * 1024 * 1024;
+
+    private static final BigDecimal CERO =
+            BigDecimal.ZERO;
+
+    /*
+     * Códigos tributarios SUNAT utilizados en UBL.
+     */
+    private static final String CODIGO_IGV = "1000";
+    private static final String CODIGO_ISC = "2000";
+    private static final String CODIGO_ICBPER = "7152";
+    private static final String CODIGO_EXONERADO = "9997";
+    private static final String CODIGO_INAFECTO = "9998";
 
 
     @PreAuthorize(
@@ -43,40 +60,28 @@ public class ComprobanteXmlService {
             MultipartFile archivo
     ) {
 
-        validarArchivo(
-                archivo
-        );
-
+        validarArchivo(archivo);
 
         try {
 
             byte[] contenido =
                     archivo.getBytes();
 
-
             String hashXml =
-                    calcularHash(
-                            contenido
-                    );
-
+                    calcularHash(contenido);
 
             Document documento =
-                    leerXmlSeguro(
-                            contenido
-                    );
-
+                    leerXmlSeguro(contenido);
 
             XPath xpath =
                     XPathFactory
                             .newInstance()
                             .newXPath();
 
-
             String nombreRaiz =
                     documento
                             .getDocumentElement()
                             .getLocalName();
-
 
             if (
                     nombreRaiz == null
@@ -89,15 +94,9 @@ public class ComprobanteXmlService {
                 );
             }
 
-
             /*
-             * Por ahora nuestro flujo principal
-             * está diseñado para comprobantes Invoice.
-             *
-             * No confundimos una CreditNote o DebitNote
-             * con una factura normal.
+             * Por ahora el flujo está diseñado para Invoice.
              */
-
             if (
                     !"Invoice".equalsIgnoreCase(
                             nombreRaiz
@@ -110,6 +109,10 @@ public class ComprobanteXmlService {
             }
 
 
+            /* =====================================================
+               DATOS GENERALES DEL COMPROBANTE
+               ===================================================== */
+
             String numeroCompleto =
                     obtenerTexto(
                             xpath,
@@ -117,7 +120,6 @@ public class ComprobanteXmlService {
                             "/*[local-name()='Invoice']" +
                                     "/*[local-name()='ID'][1]"
                     );
-
 
             String fechaTexto =
                     obtenerTexto(
@@ -127,7 +129,6 @@ public class ComprobanteXmlService {
                                     "/*[local-name()='IssueDate'][1]"
                     );
 
-
             String codigoTipo =
                     obtenerTexto(
                             xpath,
@@ -136,7 +137,6 @@ public class ComprobanteXmlService {
                                     "/*[local-name()='InvoiceTypeCode'][1]"
                     );
 
-
             String codigoMoneda =
                     obtenerTexto(
                             xpath,
@@ -144,7 +144,6 @@ public class ComprobanteXmlService {
                             "/*[local-name()='Invoice']" +
                                     "/*[local-name()='DocumentCurrencyCode'][1]"
                     );
-
 
             String montoTexto =
                     obtenerTexto(
@@ -157,11 +156,9 @@ public class ComprobanteXmlService {
 
 
             /*
-             * Algunos XML no traen
-             * DocumentCurrencyCode,
+             * Algunos XML no incluyen DocumentCurrencyCode,
              * pero sí currencyID en PayableAmount.
              */
-
             if (
                     codigoMoneda == null
                             &&
@@ -180,9 +177,20 @@ public class ComprobanteXmlService {
             }
 
 
-            /*
-             * UBL más reciente.
-             */
+            /* =====================================================
+               FECHA DE VENCIMIENTO
+               ===================================================== */
+
+            String fechaVencimientoTexto =
+                    obtenerFechaVencimiento(
+                            xpath,
+                            documento
+                    );
+
+
+            /* =====================================================
+               EMISOR
+               ===================================================== */
 
             String documentoEmisor =
                     obtenerTexto(
@@ -195,12 +203,9 @@ public class ComprobanteXmlService {
                                     "/*[local-name()='CompanyID'][1]"
                     );
 
-
             /*
-             * Compatibilidad con el XML que ya
-             * tenemos como ejemplo.
+             * Compatibilidad con XML anteriores.
              */
-
             if (documentoEmisor == null) {
 
                 documentoEmisor =
@@ -212,7 +217,6 @@ public class ComprobanteXmlService {
                                         "/*[local-name()='CustomerAssignedAccountID'][1]"
                         );
             }
-
 
             if (documentoEmisor == null) {
 
@@ -229,9 +233,9 @@ public class ComprobanteXmlService {
             }
 
 
-            /*
-             * Razón social.
-             */
+            /* =====================================================
+               RAZÓN SOCIAL
+               ===================================================== */
 
             String razonSocial =
                     obtenerTexto(
@@ -243,7 +247,6 @@ public class ComprobanteXmlService {
                                     "/*[local-name()='PartyLegalEntity']" +
                                     "/*[local-name()='RegistrationName'][1]"
                     );
-
 
             if (razonSocial == null) {
 
@@ -260,44 +263,59 @@ public class ComprobanteXmlService {
             }
 
 
-            /*
-             * Primera descripción encontrada.
-             */
+            /* =====================================================
+               DATOS TRIBUTARIOS
+               ===================================================== */
 
-            String descripcion =
-                    obtenerTexto(
+            DatosTributarios datosTributarios =
+                    obtenerDatosTributarios(
                             xpath,
-                            documento,
-                            "/*[local-name()='Invoice']" +
-                                    "/*[local-name()='InvoiceLine'][1]" +
-                                    "/*[local-name()='Item']" +
-                                    "/*[local-name()='Description'][1]"
+                            documento
                     );
 
+
+            /* =====================================================
+               GLOSA / DESCRIPCIÓN
+
+               Se obtienen las descripciones de todos los
+               InvoiceLine y se eliminan duplicados.
+               ===================================================== */
+
+            String descripcion =
+                    obtenerGlosa(
+                            xpath,
+                            documento
+                    );
+
+
+            /* =====================================================
+               CONVERSIONES
+               ===================================================== */
 
             LocalDate fechaEmision =
                     convertirFecha(
                             fechaTexto
                     );
 
+            LocalDate fechaVencimiento =
+                    convertirFecha(
+                            fechaVencimientoTexto
+                    );
 
             BigDecimal importeTotal =
                     convertirMonto(
                             montoTexto
                     );
 
-
             DocumentoNumero comprobante =
                     separarNumeroComprobante(
                             numeroCompleto
                     );
 
-
             Integer tipoComprobante =
                     convertirTipoComprobante(
                             codigoTipo
                     );
-
 
             Integer moneda =
                     convertirMoneda(
@@ -305,17 +323,38 @@ public class ComprobanteXmlService {
                     );
 
 
-            String nombreArchivo =
-                    obtenerNombreSeguro(
-                            archivo
-                                    .getOriginalFilename()
+            /* =====================================================
+               TIPO DE CAMBIO
+
+               Para PEN el valor es 1.
+               Para moneda extranjera solo se utiliza el dato
+               cuando realmente se encuentra informado.
+               ===================================================== */
+
+            BigDecimal tipoCambio =
+                    obtenerTipoCambio(
+                            xpath,
+                            documento,
+                            codigoMoneda
                     );
 
+
+            String nombreArchivo =
+                    obtenerNombreSeguro(
+                            archivo.getOriginalFilename()
+                    );
+
+
+            /* =====================================================
+               CONTROL DE CAMPOS ENCONTRADOS
+               ===================================================== */
 
             int camposEncontrados =
                     contarCampos(
 
                             fechaEmision,
+
+                            fechaVencimiento,
 
                             tipoComprobante,
 
@@ -326,6 +365,22 @@ public class ComprobanteXmlService {
                             moneda,
 
                             importeTotal,
+
+                            datosTributarios.baseImponible(),
+
+                            datosTributarios.igv(),
+
+                            datosTributarios.inafecto(),
+
+                            datosTributarios.isc(),
+
+                            datosTributarios.icbper(),
+
+                            datosTributarios.exonerado(),
+
+                            datosTributarios.porcentajeIgv(),
+
+                            tipoCambio,
 
                             documentoEmisor,
 
@@ -343,6 +398,8 @@ public class ComprobanteXmlService {
 
                     fechaEmision,
 
+                    fechaVencimiento,
+
                     tipoComprobante,
 
                     codigoTipo,
@@ -356,6 +413,22 @@ public class ComprobanteXmlService {
                     codigoMoneda,
 
                     importeTotal,
+
+                    datosTributarios.baseImponible(),
+
+                    datosTributarios.igv(),
+
+                    datosTributarios.inafecto(),
+
+                    datosTributarios.isc(),
+
+                    datosTributarios.icbper(),
+
+                    datosTributarios.exonerado(),
+
+                    datosTributarios.porcentajeIgv(),
+
+                    tipoCambio,
 
                     documentoEmisor,
 
@@ -371,9 +444,7 @@ public class ComprobanteXmlService {
 
             throw ex;
 
-        } catch (
-                Exception ex
-        ) {
+        } catch (Exception ex) {
 
             throw new IllegalArgumentException(
                     "No se pudo procesar el archivo XML.",
@@ -382,6 +453,441 @@ public class ComprobanteXmlService {
         }
     }
 
+
+    /* =========================================================
+       OBTENER DATOS TRIBUTARIOS
+       ========================================================= */
+
+    private DatosTributarios obtenerDatosTributarios(
+            XPath xpath,
+            Document documento
+    ) {
+
+        BigDecimal baseImponible = CERO;
+        BigDecimal igv = CERO;
+
+        BigDecimal inafecto = CERO;
+        BigDecimal isc = CERO;
+        BigDecimal icbper = CERO;
+        BigDecimal exonerado = CERO;
+
+        BigDecimal porcentajeIgv = null;
+
+
+        try {
+
+            /*
+             * Solo se analizan los TaxSubtotal que pertenecen
+             * al TaxTotal principal de la factura.
+             *
+             * De esta manera evitamos sumar nuevamente los
+             * impuestos que también aparecen a nivel de línea.
+             */
+            NodeList subtotales =
+                    (NodeList)
+                            xpath.evaluate(
+                                    "/*[local-name()='Invoice']" +
+                                            "/*[local-name()='TaxTotal']" +
+                                            "/*[local-name()='TaxSubtotal']",
+                                    documento,
+                                    XPathConstants.NODESET
+                            );
+
+
+            for (
+                    int i = 0;
+                    i < subtotales.getLength();
+                    i++
+            ) {
+
+                Node subtotal =
+                        subtotales.item(i);
+
+
+                String codigoTributo =
+                        obtenerTextoNodo(
+                                xpath,
+                                subtotal,
+                                "./*[local-name()='TaxCategory']" +
+                                        "/*[local-name()='TaxScheme']" +
+                                        "/*[local-name()='ID'][1]"
+                        );
+
+
+                if (codigoTributo == null) {
+                    continue;
+                }
+
+
+                BigDecimal base =
+                        convertirMonto(
+                                obtenerTextoNodo(
+                                        xpath,
+                                        subtotal,
+                                        "./*[local-name()='TaxableAmount'][1]"
+                                )
+                        );
+
+
+                BigDecimal impuesto =
+                        convertirMonto(
+                                obtenerTextoNodo(
+                                        xpath,
+                                        subtotal,
+                                        "./*[local-name()='TaxAmount'][1]"
+                                )
+                        );
+
+
+                BigDecimal porcentaje =
+                        convertirMonto(
+                                obtenerTextoNodo(
+                                        xpath,
+                                        subtotal,
+                                        "./*[local-name()='TaxCategory']" +
+                                                "/*[local-name()='Percent'][1]"
+                                )
+                        );
+
+
+                switch (codigoTributo) {
+
+                    case CODIGO_IGV -> {
+
+                        baseImponible =
+                                sumar(
+                                        baseImponible,
+                                        base
+                                );
+
+                        igv =
+                                sumar(
+                                        igv,
+                                        impuesto
+                                );
+
+                        /*
+                         * Guardamos el primer porcentaje IGV
+                         * encontrado.
+                         *
+                         * Si posteriormente aparecen facturas con
+                         * diferentes tasas de IGV en un mismo XML,
+                         * deberán clasificarse en BASE_IMP2/IGV2,
+                         * BASE_IMP3/IGV3 según la regla contable
+                         * que defina el reporte.
+                         */
+                        if (
+                                porcentajeIgv == null
+                                        &&
+                                        porcentaje != null
+                        ) {
+
+                            porcentajeIgv =
+                                    porcentaje;
+                        }
+                    }
+
+
+                    case CODIGO_ISC ->
+
+                            isc =
+                                    sumar(
+                                            isc,
+                                            impuesto
+                                    );
+
+
+                    case CODIGO_ICBPER ->
+
+                            icbper =
+                                    sumar(
+                                            icbper,
+                                            impuesto
+                                    );
+
+
+                    case CODIGO_EXONERADO ->
+
+                            exonerado =
+                                    sumar(
+                                            exonerado,
+                                            base
+                                    );
+
+
+                    case CODIGO_INAFECTO ->
+
+                            inafecto =
+                                    sumar(
+                                            inafecto,
+                                            base
+                                    );
+
+
+                    default -> {
+                        /*
+                         * Otros tributos no forman parte
+                         * actualmente del Registro de Compras
+                         * solicitado.
+                         */
+                    }
+                }
+            }
+
+
+        } catch (Exception ex) {
+
+            throw new IllegalArgumentException(
+                    "No se pudieron obtener los datos tributarios del XML.",
+                    ex
+            );
+        }
+
+
+        return new DatosTributarios(
+
+                baseImponible,
+
+                igv,
+
+                inafecto,
+
+                isc,
+
+                icbper,
+
+                exonerado,
+
+                porcentajeIgv
+        );
+    }
+
+
+    /* =========================================================
+       FECHA DE VENCIMIENTO
+       ========================================================= */
+
+    private String obtenerFechaVencimiento(
+            XPath xpath,
+            Document documento
+    ) {
+
+        /*
+         * Primera alternativa:
+         * DueDate a nivel de Invoice.
+         */
+        String fecha =
+                obtenerTexto(
+                        xpath,
+                        documento,
+                        "/*[local-name()='Invoice']" +
+                                "/*[local-name()='DueDate'][1]"
+                );
+
+
+        if (fecha != null) {
+            return fecha;
+        }
+
+
+        /*
+         * Segunda alternativa:
+         * PaymentTerms/DueDate.
+         */
+        fecha =
+                obtenerTexto(
+                        xpath,
+                        documento,
+                        "/*[local-name()='Invoice']" +
+                                "/*[local-name()='PaymentTerms']" +
+                                "/*[local-name()='DueDate'][1]"
+                );
+
+
+        if (fecha != null) {
+            return fecha;
+        }
+
+
+        /*
+         * Algunas facturas a crédito informan la fecha
+         * mediante PaymentDueDate.
+         */
+        return obtenerTexto(
+                xpath,
+                documento,
+                "/*[local-name()='Invoice']" +
+                        "/*[local-name()='PaymentMeans']" +
+                        "/*[local-name()='PaymentDueDate'][1]"
+        );
+    }
+
+
+    /* =========================================================
+       TIPO DE CAMBIO
+       ========================================================= */
+
+    private BigDecimal obtenerTipoCambio(
+            XPath xpath,
+            Document documento,
+            String codigoMoneda
+    ) {
+
+        if (
+                codigoMoneda != null
+                        &&
+                        "PEN".equalsIgnoreCase(
+                                codigoMoneda
+                        )
+        ) {
+
+            return BigDecimal.ONE;
+        }
+
+
+        /*
+         * Para moneda extranjera intentamos obtener el
+         * CalculationRate informado por el XML.
+         *
+         * Si no existe, devolvemos NULL.
+         */
+        String valor =
+                obtenerTexto(
+                        xpath,
+                        documento,
+                        "/*[local-name()='Invoice']" +
+                                "/*[local-name()='PaymentExchangeRate']" +
+                                "/*[local-name()='CalculationRate'][1]"
+                );
+
+
+        if (valor == null) {
+
+            valor =
+                    obtenerTexto(
+                            xpath,
+                            documento,
+                            "/*[local-name()='Invoice']" +
+                                    "/*[local-name()='TaxExchangeRate']" +
+                                    "/*[local-name()='CalculationRate'][1]"
+                    );
+        }
+
+
+        return convertirMonto(
+                valor
+        );
+    }
+
+
+    /* =========================================================
+       GLOSA
+       ========================================================= */
+
+    private String obtenerGlosa(
+            XPath xpath,
+            Document documento
+    ) {
+
+        try {
+
+            NodeList descripciones =
+                    (NodeList)
+                            xpath.evaluate(
+                                    "/*[local-name()='Invoice']" +
+                                            "/*[local-name()='InvoiceLine']" +
+                                            "/*[local-name()='Item']" +
+                                            "/*[local-name()='Description']",
+                                    documento,
+                                    XPathConstants.NODESET
+                            );
+
+
+            Set<String> valoresUnicos =
+                    new LinkedHashSet<>();
+
+
+            for (
+                    int i = 0;
+                    i < descripciones.getLength();
+                    i++
+            ) {
+
+                String valor =
+                        descripciones
+                                .item(i)
+                                .getTextContent();
+
+
+                if (valor == null) {
+                    continue;
+                }
+
+
+                valor =
+                        valor.trim();
+
+
+                if (!valor.isBlank()) {
+
+                    valoresUnicos.add(
+                            valor
+                    );
+                }
+            }
+
+
+            if (valoresUnicos.isEmpty()) {
+
+                return null;
+            }
+
+
+            List<String> valores =
+                    new ArrayList<>(
+                            valoresUnicos
+                    );
+
+
+            /*
+             * Si existe un solo concepto se conserva tal cual.
+             */
+            if (valores.size() == 1) {
+
+                return limitarTexto(
+                        valores.get(0),
+                        150
+                );
+            }
+
+
+            /*
+             * Si existen varios conceptos, se genera una glosa
+             * compacta sin repetir descripciones.
+             */
+            String glosa =
+                    String.join(
+                            "; ",
+                            valores
+                    );
+
+
+            return limitarTexto(
+                    glosa,
+                    150
+            );
+
+
+        } catch (Exception ex) {
+
+            return null;
+        }
+    }
+
+
+    /* =========================================================
+       ARCHIVO
+       ========================================================= */
 
     private void validarArchivo(
             MultipartFile archivo
@@ -432,6 +938,10 @@ public class ComprobanteXmlService {
     }
 
 
+    /* =========================================================
+       LECTURA XML SEGURA
+       ========================================================= */
+
     private Document leerXmlSeguro(
             byte[] contenido
     ) throws
@@ -448,10 +958,6 @@ public class ComprobanteXmlService {
                 true
         );
 
-
-        /*
-         * Seguridad XML.
-         */
 
         factory.setFeature(
                 XMLConstants.FEATURE_SECURE_PROCESSING,
@@ -491,11 +997,6 @@ public class ComprobanteXmlService {
                 factory.newDocumentBuilder();
 
 
-        /*
-         * Capa adicional:
-         * nunca resolver recursos externos.
-         */
-
         builder.setEntityResolver(
                 (
                         publicId,
@@ -534,6 +1035,10 @@ public class ComprobanteXmlService {
     }
 
 
+    /* =========================================================
+       XPATH
+       ========================================================= */
+
     private String obtenerTexto(
             XPath xpath,
             Document documento,
@@ -565,14 +1070,54 @@ public class ComprobanteXmlService {
                     : resultado;
 
 
-        } catch (
-                Exception ex
-        ) {
+        } catch (Exception ex) {
 
             return null;
         }
     }
 
+
+    private String obtenerTextoNodo(
+            XPath xpath,
+            Node nodo,
+            String expresion
+    ) {
+
+        try {
+
+            String resultado =
+                    (String)
+                            xpath.evaluate(
+                                    expresion,
+                                    nodo,
+                                    XPathConstants.STRING
+                            );
+
+
+            if (resultado == null) {
+                return null;
+            }
+
+
+            resultado =
+                    resultado.trim();
+
+
+            return resultado.isBlank()
+                    ? null
+                    : resultado;
+
+
+        } catch (Exception ex) {
+
+            return null;
+        }
+    }
+
+
+    /* =========================================================
+       CONVERSIONES
+       ========================================================= */
 
     private LocalDate convertirFecha(
             String valor
@@ -589,9 +1134,7 @@ public class ComprobanteXmlService {
                     valor
             );
 
-        } catch (
-                Exception ex
-        ) {
+        } catch (Exception ex) {
 
             return null;
         }
@@ -613,12 +1156,31 @@ public class ComprobanteXmlService {
                     valor
             );
 
-        } catch (
-                NumberFormatException ex
-        ) {
+        } catch (NumberFormatException ex) {
 
             return null;
         }
+    }
+
+
+    private BigDecimal sumar(
+            BigDecimal actual,
+            BigDecimal valor
+    ) {
+
+        if (actual == null) {
+            actual = CERO;
+        }
+
+
+        if (valor == null) {
+            return actual;
+        }
+
+
+        return actual.add(
+                valor
+        );
     }
 
 
@@ -671,6 +1233,10 @@ public class ComprobanteXmlService {
         };
     }
 
+
+    /* =========================================================
+       COMPROBANTE
+       ========================================================= */
 
     private DocumentoNumero separarNumeroComprobante(
             String valor
@@ -727,6 +1293,10 @@ public class ComprobanteXmlService {
     }
 
 
+    /* =========================================================
+       HASH
+       ========================================================= */
+
     private String calcularHash(
             byte[] contenido
     ) {
@@ -748,9 +1318,7 @@ public class ComprobanteXmlService {
                     );
 
 
-        } catch (
-                NoSuchAlgorithmException ex
-        ) {
+        } catch (NoSuchAlgorithmException ex) {
 
             throw new IllegalStateException(
                     "No se pudo calcular el hash del XML.",
@@ -759,6 +1327,10 @@ public class ComprobanteXmlService {
         }
     }
 
+
+    /* =========================================================
+       UTILIDADES
+       ========================================================= */
 
     private String obtenerNombreSeguro(
             String nombre
@@ -781,12 +1353,49 @@ public class ComprobanteXmlService {
     }
 
 
+    private String limitarTexto(
+            String valor,
+            int longitudMaxima
+    ) {
+
+        if (valor == null) {
+            return null;
+        }
+
+
+        String resultado =
+                valor.trim();
+
+
+        if (resultado.isBlank()) {
+            return null;
+        }
+
+
+        if (
+                resultado.length()
+                        <=
+                        longitudMaxima
+        ) {
+
+            return resultado;
+        }
+
+
+        return resultado
+                .substring(
+                        0,
+                        longitudMaxima
+                )
+                .trim();
+    }
+
+
     private int contarCampos(
             Object... valores
     ) {
 
-        int total =
-                0;
+        int total = 0;
 
 
         for (
@@ -804,9 +1413,33 @@ public class ComprobanteXmlService {
     }
 
 
+    /* =========================================================
+       RECORDS INTERNOS
+       ========================================================= */
+
     private record DocumentoNumero(
             String serie,
             String numero
+    ) {
+    }
+
+
+    private record DatosTributarios(
+
+            BigDecimal baseImponible,
+
+            BigDecimal igv,
+
+            BigDecimal inafecto,
+
+            BigDecimal isc,
+
+            BigDecimal icbper,
+
+            BigDecimal exonerado,
+
+            BigDecimal porcentajeIgv
+
     ) {
     }
 }

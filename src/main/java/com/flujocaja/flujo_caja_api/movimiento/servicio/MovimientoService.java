@@ -247,6 +247,8 @@ public class MovimientoService {
 
                 request.fechaComprobante(),
 
+                request.fechaVencimiento(),
+
                 request.serieComprobante(),
 
                 request.numeroComprobante(),
@@ -255,11 +257,27 @@ public class MovimientoService {
 
                 request.razonSocialEmisor(),
 
+                request.baseImponible(),
+
+                request.igv(),
+
+                request.inafecto(),
+
+                request.isc(),
+
+                request.icbper(),
+
+                request.exonerado(),
+
+                request.porcentajeIgv(),
+
+                request.tipoCambio(),
+
                 request.archivoXmlNombre(),
 
                 request.hashXml(),
-                usuarioId
 
+                usuarioId
         );
 
 
@@ -542,9 +560,11 @@ public class MovimientoService {
 
                 empresaId,
 
-                movimientoId,
+                movimiento.id(),
 
                 request.fechaComprobante(),
+
+                request.fechaVencimiento(),
 
                 request.serieComprobante(),
 
@@ -554,11 +574,27 @@ public class MovimientoService {
 
                 request.razonSocialEmisor(),
 
+                request.baseImponible(),
+
+                request.igv(),
+
+                request.inafecto(),
+
+                request.isc(),
+
+                request.icbper(),
+
+                request.exonerado(),
+
+                request.porcentajeIgv(),
+
+                request.tipoCambio(),
+
                 request.archivoXmlNombre(),
 
                 request.hashXml(),
-                usuarioId
 
+                usuarioId
         );
 
 
