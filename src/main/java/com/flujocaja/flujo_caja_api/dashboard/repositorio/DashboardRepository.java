@@ -1,16 +1,20 @@
 package com.flujocaja.flujo_caja_api.dashboard.repositorio;
 
 import com.flujocaja.flujo_caja_api.dashboard.dto.DashboardResponse;
+import com.flujocaja.flujo_caja_api.dashboard.dto.DashboardResumenAnualResponse;
 import com.flujocaja.flujo_caja_api.dashboard.dto.DashboardResumenResponse;
 import com.flujocaja.flujo_caja_api.dashboard.dto.FlujoDiarioResponse;
 import com.flujocaja.flujo_caja_api.dashboard.dto.UltimoMovimientoResponse;
+
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.SqlParameter;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
+
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
+
 import java.sql.Types;
 import java.time.LocalDate;
 import java.util.List;
@@ -21,6 +25,12 @@ public class DashboardRepository {
 
     private final SimpleJdbcCall paDashboardSel;
 
+    private final SimpleJdbcCall paDashboardResumenAnualSel;
+
+
+    /* =========================================================
+       RESUMEN ACTUAL
+       ========================================================= */
 
     private final RowMapper<DashboardResumenResponse> resumenMapper =
             (rs, rowNum) ->
@@ -47,6 +57,10 @@ public class DashboardRepository {
                             )
                     );
 
+
+    /* =========================================================
+       FLUJO DIARIO ACTUAL
+       ========================================================= */
 
     private final RowMapper<FlujoDiarioResponse> flujoDiarioMapper =
             (rs, rowNum) ->
@@ -85,6 +99,10 @@ public class DashboardRepository {
                             )
                     );
 
+
+    /* =========================================================
+       ÚLTIMOS MOVIMIENTOS ACTUAL
+       ========================================================= */
 
     private final RowMapper<UltimoMovimientoResponse> ultimoMovimientoMapper =
             (rs, rowNum) -> {
@@ -150,12 +168,80 @@ public class DashboardRepository {
             };
 
 
+    /* =========================================================
+       NUEVO RESUMEN ANUAL
+       ========================================================= */
+
+    private final RowMapper<DashboardResumenAnualResponse> resumenAnualMapper =
+            (rs, rowNum) ->
+                    new DashboardResumenAnualResponse(
+
+                            rs.getInt(
+                                    "nAnio"
+                            ),
+
+                            rs.getBigDecimal(
+                                    "nSaldoInicial"
+                            ),
+
+                            rs.getBigDecimal(
+                                    "nIngresosCorrientes"
+                            ),
+
+                            rs.getBigDecimal(
+                                    "nIngresosNoCorrientes"
+                            ),
+
+                            rs.getBigDecimal(
+                                    "nIngresosFinancieros"
+                            ),
+
+                            rs.getBigDecimal(
+                                    "nTotalIngresos"
+                            ),
+
+                            rs.getBigDecimal(
+                                    "nEgresosCorrientes"
+                            ),
+
+                            rs.getBigDecimal(
+                                    "nEgresosNoCorrientes"
+                            ),
+
+                            rs.getBigDecimal(
+                                    "nEgresosFinancieros"
+                            ),
+
+                            rs.getBigDecimal(
+                                    "nTotalEgresos"
+                            ),
+
+                            rs.getBigDecimal(
+                                    "nSaldoFinal"
+                            ),
+
+                            rs.getBigDecimal(
+                                    "nSaldoOperativo"
+                            )
+                    );
+
+
+    /* =========================================================
+       CONSTRUCTOR
+       ========================================================= */
+
     public DashboardRepository(
             DataSource dataSource
     ) {
 
+        /* -----------------------------------------------------
+           DASHBOARD ACTUAL
+           ----------------------------------------------------- */
+
         this.paDashboardSel =
-                new SimpleJdbcCall(dataSource)
+                new SimpleJdbcCall(
+                        dataSource
+                )
 
                         .withProcedureName(
                                 "PA_Dashboard_Sel"
@@ -186,14 +272,6 @@ public class DashboardRepository {
                                 )
                         )
 
-                        /*
-                         * IMPORTANTE:
-                         *
-                         * Se registran en el mismo
-                         * orden en que el PA hace
-                         * los SELECT.
-                         */
-
                         .returningResultSet(
                                 "resumen",
                                 resumenMapper
@@ -208,8 +286,46 @@ public class DashboardRepository {
                                 "ultimosMovimientos",
                                 ultimoMovimientoMapper
                         );
+
+
+        /* -----------------------------------------------------
+           NUEVO RESUMEN ANUAL
+           ----------------------------------------------------- */
+
+        this.paDashboardResumenAnualSel =
+                new SimpleJdbcCall(
+                        dataSource
+                )
+
+                        .withProcedureName(
+                                "PA_Dashboard_Sel_ResumenAnual"
+                        )
+
+                        .withoutProcedureColumnMetaDataAccess()
+
+                        .declareParameters(
+
+                                new SqlParameter(
+                                        "nEmpresaId",
+                                        Types.INTEGER
+                                ),
+
+                                new SqlParameter(
+                                        "nAnioActual",
+                                        Types.INTEGER
+                                )
+                        )
+
+                        .returningResultSet(
+                                "resumenAnual",
+                                resumenAnualMapper
+                        );
     }
 
+
+    /* =========================================================
+       DASHBOARD ACTUAL
+       ========================================================= */
 
     @SuppressWarnings("unchecked")
     public DashboardResponse obtener(
@@ -279,6 +395,7 @@ public class DashboardRepository {
 
         DashboardResumenResponse resumen =
                 resumenLista.isEmpty()
+
                         ? new DashboardResumenResponse(
                         java.math.BigDecimal.ZERO,
                         java.math.BigDecimal.ZERO,
@@ -286,7 +403,10 @@ public class DashboardRepository {
                         java.math.BigDecimal.ZERO,
                         java.math.BigDecimal.ZERO
                 )
-                        : resumenLista.get(0);
+
+                        : resumenLista.get(
+                        0
+                );
 
 
         return new DashboardResponse(
@@ -294,5 +414,42 @@ public class DashboardRepository {
                 flujoDiario,
                 ultimosMovimientos
         );
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<DashboardResumenAnualResponse> obtenerResumenAnual(
+
+            Integer empresaId,
+
+            Integer anioActual
+    ) {
+
+        MapSqlParameterSource parametros =
+                new MapSqlParameterSource()
+
+                        .addValue(
+                                "nEmpresaId",
+                                empresaId,
+                                Types.INTEGER
+                        )
+
+                        .addValue(
+                                "nAnioActual",
+                                anioActual,
+                                Types.INTEGER
+                        );
+
+
+        Map<String, Object> resultado =
+                paDashboardResumenAnualSel.execute(
+                        parametros
+                );
+
+
+        return (List<DashboardResumenAnualResponse>)
+                resultado.getOrDefault(
+                        "resumenAnual",
+                        List.of()
+                );
     }
 }

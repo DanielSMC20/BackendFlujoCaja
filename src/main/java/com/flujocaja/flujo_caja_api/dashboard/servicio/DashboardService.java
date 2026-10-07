@@ -1,11 +1,16 @@
 package com.flujocaja.flujo_caja_api.dashboard.servicio;
 
 import com.flujocaja.flujo_caja_api.dashboard.dto.DashboardResponse;
+import com.flujocaja.flujo_caja_api.dashboard.dto.DashboardResumenAnualResponse;
+
 import com.flujocaja.flujo_caja_api.dashboard.repositorio.DashboardRepository;
+
 import com.flujocaja.flujo_caja_api.seguridad.servicio.ContextoSeguridad;
+
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 public class DashboardService {
@@ -28,20 +33,27 @@ public class DashboardService {
     }
 
 
+    /* =========================================================
+       DASHBOARD ACTUAL
+       ========================================================= */
+
     public DashboardResponse obtener(
+
             LocalDate fechaDesde,
+
             LocalDate fechaHasta,
+
             Integer cantidadUltimos
     ) {
 
         if (
                 fechaDesde != null
-                        &&
-                        fechaHasta != null
-                        &&
-                        fechaDesde.isAfter(
-                                fechaHasta
-                        )
+
+                        && fechaHasta != null
+
+                        && fechaDesde.isAfter(
+                        fechaHasta
+                )
         ) {
 
             throw new IllegalArgumentException(
@@ -52,10 +64,10 @@ public class DashboardService {
 
         if (
                 cantidadUltimos == null
-                        ||
-                        cantidadUltimos < 1
-                        ||
-                        cantidadUltimos > 50
+
+                        || cantidadUltimos < 1
+
+                        || cantidadUltimos > 50
         ) {
 
             throw new IllegalArgumentException(
@@ -73,6 +85,33 @@ public class DashboardService {
                 fechaHasta,
 
                 cantidadUltimos
+        );
+    }
+
+    public List<DashboardResumenAnualResponse> obtenerResumenAnual(
+
+            Integer anioActual
+    ) {
+
+        if (
+                anioActual == null
+
+                        || anioActual < 2000
+
+                        || anioActual > 2100
+        ) {
+
+            throw new IllegalArgumentException(
+                    "El año consultado no es válido."
+            );
+        }
+
+
+        return dashboardRepository.obtenerResumenAnual(
+
+                contextoSeguridad.empresaId(),
+
+                anioActual
         );
     }
 }
