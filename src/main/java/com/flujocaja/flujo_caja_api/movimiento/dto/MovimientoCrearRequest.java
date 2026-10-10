@@ -14,7 +14,6 @@ public record MovimientoCrearRequest(
         @NotNull
         Integer tipoMovimiento,
 
-        @NotNull
         Integer categoriaId,
 
         LocalDate fechaMovimiento,

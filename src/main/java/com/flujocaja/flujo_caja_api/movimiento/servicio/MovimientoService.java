@@ -12,6 +12,8 @@ import com.flujocaja.flujo_caja_api.movimiento.repositorio.MovimientoRepository;
 import com.flujocaja.flujo_caja_api.seguridad.servicio.ContextoSeguridad;
 import com.flujocaja.flujo_caja_api.movimiento.dto.MovimientoFechaProyectadaRequest;
 import org.springframework.security.access.prepost.PreAuthorize;
+import com.flujocaja.flujo_caja_api.categoria.repositorio.CategoriaRepository;
+import com.flujocaja.flujo_caja_api.categoria.dto.CategoriaResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,12 +45,15 @@ public class MovimientoService {
 
     private final ComprobanteRepository comprobanteRepository;
 
+    private final CategoriaRepository categoriaRepository;
+
     private final ContextoSeguridad contextoSeguridad;
 
 
     public MovimientoService(
             MovimientoRepository movimientoRepository,
             ComprobanteRepository comprobanteRepository,
+            CategoriaRepository categoriaRepository,
             ContextoSeguridad contextoSeguridad
     ) {
 
@@ -60,6 +65,138 @@ public class MovimientoService {
 
         this.contextoSeguridad =
                 contextoSeguridad;
+        this.categoriaRepository = categoriaRepository;
+
+    }
+
+    /*
+     * VALIDAR MEDIO DE INGRESO
+     *
+     * 1 = Efectivo
+     * 2 = POS
+     */
+    private void validarMedioIngreso(
+            Integer tipoMovimiento,
+            Integer medioPago
+    ) {
+
+        if (
+                Integer.valueOf(TIPO_INGRESO).equals(tipoMovimiento)
+                        && !Integer.valueOf(1).equals(medioPago)
+                        && !Integer.valueOf(2).equals(medioPago)
+        ) {
+
+            throw new IllegalArgumentException(
+                    "Los ingresos deben registrarse como Efectivo o POS."
+            );
+        }
+    }
+
+
+    /*
+     * RESOLVER CATEGORIA DEL MOVIMIENTO
+     *
+     * INGRESOS:
+     * Se asigna automáticamente la categoría Ventas.
+     *
+     * EGRESOS:
+     * El usuario debe seleccionar un clasificador activo
+     * perteneciente a su empresa.
+     */
+    private Integer resolverCategoria(
+            Integer empresaId,
+            Integer tipoMovimiento,
+            Integer categoriaIdSolicitada,
+            Long usuarioId
+    ) {
+
+        // EGRESOS
+
+        if (
+                !Integer.valueOf(TIPO_INGRESO).equals(tipoMovimiento)
+        ) {
+
+            if (
+                    categoriaIdSolicitada == null
+                            || categoriaIdSolicitada <= 0
+            ) {
+
+                throw new IllegalArgumentException(
+                        "Selecciona un clasificador de egresos."
+                );
+            }
+
+            boolean categoriaValida = categoriaRepository
+                    .listar(
+                            empresaId,
+                            TIPO_EGRESO,
+                            true
+                    )
+                    .stream()
+                    .anyMatch(
+                            categoria ->
+                                    categoriaIdSolicitada.equals(
+                                            categoria.id()
+                                    )
+                    );
+
+            if (!categoriaValida) {
+
+                throw new IllegalArgumentException(
+                        "El clasificador de egresos no pertenece a la empresa o está inactivo."
+                );
+            }
+
+            return categoriaIdSolicitada;
+        }
+
+
+        // INGRESOS
+
+        for (
+                CategoriaResponse categoria :
+                categoriaRepository.listar(
+                        empresaId,
+                        TIPO_INGRESO,
+                        false
+                )
+        ) {
+
+            if (
+                    categoria.nombre() != null
+                            && "ventas".equalsIgnoreCase(
+                            categoria.nombre().trim()
+                    )
+            ) {
+
+                if (
+                        Boolean.TRUE.equals(categoria.activo())
+                ) {
+
+                    return categoria.id();
+                }
+
+                return categoriaRepository.actualizar(
+                        empresaId,
+                        categoria.id(),
+                        categoria.nombre(),
+                        categoria.descripcion(),
+                        true,
+                        usuarioId
+                ).id();
+            }
+        }
+
+
+        // Crear categoría interna si todavía no existe
+
+        return categoriaRepository.registrar(
+                empresaId,
+                TIPO_INGRESO,
+                "Ventas",
+                "Clasificador interno de ingresos por Efectivo y POS.",
+                usuarioId
+        ).id();
     }
 
 
@@ -212,6 +349,18 @@ public class MovimientoService {
                         request
                 );
 
+        // Los ingresos solo admiten Efectivo (1) o POS (2).
+        validarMedioIngreso(
+                request.tipoMovimiento(),
+                request.medioPago()
+        );
+
+        Integer categoriaId = resolverCategoria(
+                empresaId,
+                request.tipoMovimiento(),
+                request.categoriaId(),
+                usuarioId
+        );
 
         /* -----------------------------------------------------
            MOVIMIENTO
@@ -221,8 +370,7 @@ public class MovimientoService {
                 movimientoRepository.registrar(
                         empresaId,
                         request.tipoMovimiento(),
-                        request.categoriaId(),
-
+                        categoriaId,
                         estado.fechaMovimiento(),
                         estado.cancelado(),
 
@@ -515,6 +663,21 @@ public class MovimientoService {
                 );
 
 
+        validarMedioIngreso(
+                existente.tipoMovimiento(),
+                request.medioPago()
+        );
+
+
+
+        Integer categoriaId = resolverCategoria(
+                empresaId,
+                existente.tipoMovimiento(),
+                request.categoriaId(),
+                usuarioId
+        );
+
+
         /* -----------------------------------------------------
            MOVIMIENTO
            ----------------------------------------------------- */
@@ -528,7 +691,7 @@ public class MovimientoService {
 
                         existente.tipoMovimiento(),
 
-                        request.categoriaId(),
+                        categoriaId,
 
                         estado.fechaMovimiento(),
 

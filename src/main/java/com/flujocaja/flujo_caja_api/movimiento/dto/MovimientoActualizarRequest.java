@@ -11,7 +11,6 @@ import java.time.LocalDate;
 
 public record MovimientoActualizarRequest(
 
-        @NotNull
         Integer categoriaId,
 
         LocalDate fechaMovimiento,

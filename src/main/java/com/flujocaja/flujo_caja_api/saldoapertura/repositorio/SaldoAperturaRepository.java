@@ -21,44 +21,66 @@ import java.util.Optional;
 public class SaldoAperturaRepository {
 
     private final SimpleJdbcCall paSaldoAperturaIns;
+    private final SimpleJdbcCall paSaldoAperturaUpd;
     private final SimpleJdbcCall paSaldoAperturaSel;
 
     private final RowMapper<SaldoAperturaResponse> saldoAperturaMapper =
-            (rs, rowNum) ->
-                    new SaldoAperturaResponse(
-                            rs.getBoolean("bConfigurado"),
-                            rs.getBigDecimal("nSaldoInicial"),
-                            rs.getDate("dFechaApertura").toLocalDate(),
-                            rs.getInt("nMoneda"),
-                            rs.getString("cMoneda"),
-                            rs.getLong("nUsuarioRegistroId"),
-                            rs.getTimestamp("dFechaRegistro")
-                                    .toLocalDateTime()
-                    );
+            (rs, rowNum) -> {
 
-    public SaldoAperturaRepository(
-            DataSource dataSource
-    ) {
+                java.sql.Date fecha =
+                        rs.getDate("dFechaApertura");
 
+                java.sql.Timestamp registro =
+                        rs.getTimestamp("dFechaRegistro");
+
+                long usuarioId =
+                        rs.getLong("nUsuarioRegistroId");
+
+                Long usuarioRegistroId =
+                        rs.wasNull() ? null : usuarioId;
+
+                int monedaId = rs.getInt("nMoneda");
+
+                Integer moneda =
+                        rs.wasNull() ? null : monedaId;
+
+                return new SaldoAperturaResponse(
+                        rs.getBoolean("bConfigurado"),
+                        rs.getBigDecimal("nSaldoInicial"),
+                        fecha == null
+                                ? null
+                                : fecha.toLocalDate(),
+                        moneda,
+                        rs.getString("cMoneda"),
+                        usuarioRegistroId,
+                        registro == null
+                                ? null
+                                : registro.toLocalDateTime()
+                );
+            };
+
+    public SaldoAperturaRepository(DataSource dataSource) {
+
+        // Registrar saldo inicial
         this.paSaldoAperturaIns =
                 new SimpleJdbcCall(dataSource)
                         .withProcedureName("PA_SaldoApertura_Ins")
                         .withoutProcedureColumnMetaDataAccess()
                         .declareParameters(
                                 new SqlParameter(
-                                        "nEmpresaId",
+                                        "p_nEmpresaId",
                                         Types.INTEGER
                                 ),
                                 new SqlParameter(
-                                        "nSaldoInicial",
+                                        "p_nSaldoInicial",
                                         Types.DECIMAL
                                 ),
                                 new SqlParameter(
-                                        "dFechaApertura",
+                                        "p_dFechaApertura",
                                         Types.DATE
                                 ),
                                 new SqlParameter(
-                                        "nUsuarioId",
+                                        "p_nUsuarioId",
                                         Types.BIGINT
                                 )
                         )
@@ -67,13 +89,38 @@ public class SaldoAperturaRepository {
                                 saldoAperturaMapper
                         );
 
+        // Editar saldo inicial
+        this.paSaldoAperturaUpd =
+                new SimpleJdbcCall(dataSource)
+                        .withProcedureName("PA_SaldoApertura_Upd")
+                        .withoutProcedureColumnMetaDataAccess()
+                        .declareParameters(
+                                new SqlParameter(
+                                        "p_nEmpresaId",
+                                        Types.INTEGER
+                                ),
+                                new SqlParameter(
+                                        "p_nSaldoInicial",
+                                        Types.DECIMAL
+                                ),
+                                new SqlParameter(
+                                        "p_dFechaApertura",
+                                        Types.DATE
+                                ),
+                                new SqlParameter(
+                                        "p_nUsuarioId",
+                                        Types.BIGINT
+                                )
+                        );
+
+        // Consultar saldo inicial
         this.paSaldoAperturaSel =
                 new SimpleJdbcCall(dataSource)
                         .withProcedureName("PA_SaldoApertura_Sel")
                         .withoutProcedureColumnMetaDataAccess()
                         .declareParameters(
                                 new SqlParameter(
-                                        "nEmpresaId",
+                                        "p_nEmpresaId",
                                         Types.INTEGER
                                 )
                         )
@@ -81,6 +128,8 @@ public class SaldoAperturaRepository {
                                 "saldoApertura",
                                 saldoAperturaMapper
                         );
+
+
     }
 
     public SaldoAperturaResponse registrar(
@@ -92,26 +141,10 @@ public class SaldoAperturaRepository {
 
         MapSqlParameterSource parametros =
                 new MapSqlParameterSource()
-                        .addValue(
-                                "nEmpresaId",
-                                empresaId,
-                                Types.INTEGER
-                        )
-                        .addValue(
-                                "nSaldoInicial",
-                                saldoInicial,
-                                Types.DECIMAL
-                        )
-                        .addValue(
-                                "dFechaApertura",
-                                fechaApertura,
-                                Types.DATE
-                        )
-                        .addValue(
-                                "nUsuarioId",
-                                usuarioId,
-                                Types.BIGINT
-                        );
+                        .addValue("p_nEmpresaId", empresaId, Types.INTEGER)
+                        .addValue("p_nSaldoInicial", saldoInicial, Types.DECIMAL)
+                        .addValue("p_dFechaApertura", fechaApertura, Types.DATE)
+                        .addValue("p_nUsuarioId", usuarioId, Types.BIGINT);
 
         Map<String, Object> resultado =
                 paSaldoAperturaIns.execute(parametros);
@@ -126,17 +159,54 @@ public class SaldoAperturaRepository {
                 );
     }
 
+    public SaldoAperturaResponse editar(
+            Integer empresaId,
+            BigDecimal saldoInicial,
+            LocalDate fechaApertura,
+            Long usuarioId
+    ) {
+
+        MapSqlParameterSource parametros =
+                new MapSqlParameterSource()
+                        .addValue(
+                                "p_nEmpresaId",
+                                empresaId,
+                                Types.INTEGER
+                        )
+                        .addValue(
+                                "p_nSaldoInicial",
+                                saldoInicial,
+                                Types.DECIMAL
+                        )
+                        .addValue(
+                                "p_dFechaApertura",
+                                fechaApertura,
+                                Types.DATE
+                        )
+                        .addValue(
+                                "p_nUsuarioId",
+                                usuarioId,
+                                Types.BIGINT
+                        );
+
+        paSaldoAperturaUpd.execute(parametros);
+
+        return obtener(empresaId)
+                .filter(SaldoAperturaResponse::configurado)
+                .orElseThrow(
+                        () -> new IllegalStateException(
+                                "No se obtuvo el saldo de apertura actualizado."
+                        )
+                );
+    }
+
     public Optional<SaldoAperturaResponse> obtener(
             Integer empresaId
     ) {
 
         MapSqlParameterSource parametros =
                 new MapSqlParameterSource()
-                        .addValue(
-                                "nEmpresaId",
-                                empresaId,
-                                Types.INTEGER
-                        );
+                        .addValue("p_nEmpresaId", empresaId, Types.INTEGER);
 
         Map<String, Object> resultado =
                 paSaldoAperturaSel.execute(parametros);
