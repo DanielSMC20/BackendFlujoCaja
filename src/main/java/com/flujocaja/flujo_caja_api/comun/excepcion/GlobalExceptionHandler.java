@@ -57,9 +57,16 @@ public class GlobalExceptionHandler {
                 );
 
 
+        // Si solo un campo falla, devolvemos su mensaje concreto para que
+        // el frontend lo muestre tal cual (en vez del genérico).
+        String mensaje =
+                campos.size() == 1
+                        ? campos.values().iterator().next()
+                        : "Existen datos inválidos.";
+
         return construirRespuesta(
                 HttpStatus.BAD_REQUEST,
-                "Existen datos inválidos.",
+                mensaje,
                 request.getRequestURI(),
                 campos
         );

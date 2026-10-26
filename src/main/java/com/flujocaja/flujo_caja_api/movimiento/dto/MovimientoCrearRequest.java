@@ -24,8 +24,8 @@ public record MovimientoCrearRequest(
 
         Boolean cancelado,
 
-        @NotBlank
-        @Size(max = 150)
+        @NotBlank(message = "Escribe una descripción; no puede quedar vacía ni solo con espacios.")
+        @Size(max = 150, message = "La descripción no puede superar los 150 caracteres.")
         String descripcion,
 
         @NotNull
@@ -41,10 +41,6 @@ public record MovimientoCrearRequest(
         @Size(max = 500)
         String observacion,
 
-
-        /* =========================================================
-           COMPROBANTE
-           ========================================================= */
 
         LocalDate fechaComprobante,
 
@@ -62,10 +58,6 @@ public record MovimientoCrearRequest(
         @Size(max = 200)
         String razonSocialEmisor,
 
-
-        /* =========================================================
-           DATOS TRIBUTARIOS DEL COMPROBANTE
-           ========================================================= */
 
         @DecimalMin(value = "0.00")
         BigDecimal baseImponible,
@@ -91,10 +83,6 @@ public record MovimientoCrearRequest(
         @DecimalMin(value = "0.00")
         BigDecimal tipoCambio,
 
-
-        /* =========================================================
-           XML
-           ========================================================= */
 
         @Size(max = 255)
         String archivoXmlNombre,

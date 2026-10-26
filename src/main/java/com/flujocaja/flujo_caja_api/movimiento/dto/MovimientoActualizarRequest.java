@@ -17,8 +17,8 @@ public record MovimientoActualizarRequest(
 
         LocalDate fechaProyectada,
 
-        @NotBlank
-        @Size(max = 150)
+        @NotBlank(message = "Escribe una descripción; no puede quedar vacía ni solo con espacios.")
+        @Size(max = 150, message = "La descripción no puede superar los 150 caracteres.")
         String descripcion,
 
         @NotNull

@@ -78,14 +78,16 @@ public class CategoriaService {
         Integer empresaId =
                 contextoSeguridad.empresaId();
 
+
         boolean esCategoriaDeEgreso =
-                categoriaRepository
-                        .listar(
-                                empresaId,
-                                2,
-                                false
+                java.util.stream.Stream.concat(
+                                categoriaRepository
+                                        .listar(empresaId, 2, true)
+                                        .stream(),
+                                categoriaRepository
+                                        .listar(empresaId, 2, false)
+                                        .stream()
                         )
-                        .stream()
                         .anyMatch(
                                 categoria ->
                                         categoriaId.equals(

@@ -644,6 +644,40 @@ public class ComprobanteXmlService {
         }
 
 
+        /*
+         * Muchos emisores solo ponen cbc:Percent en las líneas
+         * (InvoiceLine), no en el TaxTotal del documento. En ese caso
+         * porcentajeIgv quedaba en null y el Registro de Compras mostraba 0.
+         * Primero buscamos el % a nivel de línea y, si tampoco está,
+         * lo calculamos como IGV / base.
+         */
+        if (porcentajeIgv == null) {
+
+            porcentajeIgv =
+                    obtenerPorcentajeIgvDeLineas(
+                            xpath,
+                            documento
+                    );
+        }
+
+        if (
+                porcentajeIgv == null
+                        && baseImponible != null
+                        && igv != null
+                        && baseImponible.signum() > 0
+                        && igv.signum() > 0
+        ) {
+
+            porcentajeIgv =
+                    igv.multiply(BigDecimal.valueOf(100))
+                            .divide(
+                                    baseImponible,
+                                    2,
+                                    java.math.RoundingMode.HALF_UP
+                            );
+        }
+
+
         return new DatosTributarios(
 
                 baseImponible,
@@ -660,6 +694,44 @@ public class ComprobanteXmlService {
 
                 porcentajeIgv
         );
+    }
+
+
+    /* =========================================================
+       % IGV A NIVEL DE LÍNEA
+       ========================================================= */
+
+    /*
+     * Devuelve el primer cbc:Percent de IGV (tributo 1000) que aparezca
+     * en las líneas del comprobante, o null si no hay ninguno.
+     */
+    private BigDecimal obtenerPorcentajeIgvDeLineas(
+            XPath xpath,
+            Document documento
+    ) {
+
+        String porcentaje =
+                obtenerTextoNodo(
+                        xpath,
+                        documento,
+                        "(/*[local-name()='Invoice']" +
+                                "/*[local-name()='InvoiceLine']" +
+                                "/*[local-name()='TaxTotal']" +
+                                "/*[local-name()='TaxSubtotal']" +
+                                "/*[local-name()='TaxCategory']" +
+                                "[*[local-name()='TaxScheme']" +
+                                "/*[local-name()='ID']='" + CODIGO_IGV + "']" +
+                                "/*[local-name()='Percent'])[1]"
+                );
+
+        BigDecimal valor =
+                convertirMonto(
+                        porcentaje
+                );
+
+        return valor != null && valor.signum() > 0
+                ? valor
+                : null;
     }
 
 

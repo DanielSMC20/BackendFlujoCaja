@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -151,15 +152,27 @@ public class MovimientoService {
         }
 
 
-        // INGRESOS
 
-        for (
-                CategoriaResponse categoria :
+        List<CategoriaResponse> categoriasIngreso =
+                new ArrayList<>(
+                        categoriaRepository.listar(
+                                empresaId,
+                                TIPO_INGRESO,
+                                true
+                        )
+                );
+
+        categoriasIngreso.addAll(
                 categoriaRepository.listar(
                         empresaId,
                         TIPO_INGRESO,
                         false
                 )
+        );
+
+        for (
+                CategoriaResponse categoria :
+                categoriasIngreso
         ) {
 
             if (
