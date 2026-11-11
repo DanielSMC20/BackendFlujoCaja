@@ -189,9 +189,11 @@ public class MovimientoService {
                     return categoria.id();
                 }
 
+                // Existe pero está inactiva: se reactiva
                 return categoriaRepository.actualizar(
                         empresaId,
                         categoria.id(),
+                        TIPO_INGRESO,
                         categoria.nombre(),
                         categoria.descripcion(),
                         true,
