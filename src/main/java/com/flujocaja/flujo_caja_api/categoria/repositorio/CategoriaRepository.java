@@ -144,49 +144,21 @@ public class CategoriaRepository {
         paCategoriaUpd =
                 new SimpleJdbcCall(dataSource)
 
-                        .withProcedureName(
-                                "PA_CategoriaMovimiento_Upd"
-                        )
+                        .withProcedureName("PA_CategoriaMovimiento_Upd")
 
                         .withoutProcedureColumnMetaDataAccess()
 
                         .declareParameters(
-
-                                new SqlParameter(
-                                        "nEmpresaId",
-                                        Types.INTEGER
-                                ),
-
-                                new SqlParameter(
-                                        "nCategoriaMovimientoId",
-                                        Types.INTEGER
-                                ),
-
-                                new SqlParameter(
-                                        "cNombre",
-                                        Types.NVARCHAR
-                                ),
-
-                                new SqlParameter(
-                                        "cDescripcion",
-                                        Types.NVARCHAR
-                                ),
-
-                                new SqlParameter(
-                                        "bActivo",
-                                        Types.BIT
-                                ),
-
-                                new SqlParameter(
-                                        "nUsuarioModificacionId",
-                                        Types.BIGINT
-                                )
+                                new SqlParameter("nCategoriaMovimientoId", Types.INTEGER),
+                                new SqlParameter("nEmpresaId",             Types.INTEGER),
+                                new SqlParameter("nTipoMovimiento",        Types.INTEGER),
+                                new SqlParameter("cNombre",                Types.NVARCHAR),
+                                new SqlParameter("cDescripcion",           Types.NVARCHAR),
+                                new SqlParameter("bActivo",                Types.BIT),
+                                new SqlParameter("nUsuarioModificacionId", Types.BIGINT)
                         )
 
-                        .returningResultSet(
-                                "categoria",
-                                categoriaMapper
-                        );
+                        .returningResultSet("categoria", categoriaMapper);
     }
 
 
@@ -306,6 +278,7 @@ public class CategoriaRepository {
     public CategoriaResponse actualizar(
             Integer empresaId,
             Integer categoriaId,
+            Integer tipoMovimiento,
             String nombre,
             String descripcion,
             Boolean activo,
@@ -314,43 +287,13 @@ public class CategoriaRepository {
 
         MapSqlParameterSource parametros =
                 new MapSqlParameterSource()
-
-                        .addValue(
-                                "nEmpresaId",
-                                empresaId,
-                                Types.INTEGER
-                        )
-
-                        .addValue(
-                                "nCategoriaMovimientoId",
-                                categoriaId,
-                                Types.INTEGER
-                        )
-
-                        .addValue(
-                                "cNombre",
-                                nombre,
-                                Types.NVARCHAR
-                        )
-
-                        .addValue(
-                                "cDescripcion",
-                                descripcion,
-                                Types.NVARCHAR
-                        )
-
-                        .addValue(
-                                "bActivo",
-                                activo,
-                                Types.BIT
-                        )
-
-                        .addValue(
-                                "nUsuarioModificacionId",
-                                usuarioId,
-                                Types.BIGINT
-                        );
-
+                        .addValue("nEmpresaId", empresaId, Types.INTEGER)
+                        .addValue("nCategoriaMovimientoId", categoriaId, Types.INTEGER)
+                        .addValue("nTipoMovimiento", tipoMovimiento, Types.INTEGER)
+                        .addValue("cNombre", nombre, Types.NVARCHAR)
+                        .addValue("cDescripcion", descripcion, Types.NVARCHAR)
+                        .addValue("bActivo", activo, Types.BIT)
+                        .addValue("nUsuarioModificacionId", usuarioId, Types.BIGINT);
 
         Map<String, Object> resultado =
                 paCategoriaUpd.execute(

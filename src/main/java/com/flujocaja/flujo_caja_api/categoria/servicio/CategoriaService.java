@@ -17,6 +17,9 @@ public class CategoriaService {
     private final CategoriaRepository categoriaRepository;
     private final ContextoSeguridad contextoSeguridad;
 
+    private static final int TIPO_EGRESO = 2;
+
+
     public CategoriaService(
             CategoriaRepository categoriaRepository,
             ContextoSeguridad contextoSeguridad
@@ -75,28 +78,23 @@ public class CategoriaService {
             CategoriaActualizarRequest request
     ) {
 
-        Integer empresaId =
-                contextoSeguridad.empresaId();
-
+        Integer empresaId = contextoSeguridad.empresaId();
 
         boolean esCategoriaDeEgreso =
                 java.util.stream.Stream.concat(
                                 categoriaRepository
-                                        .listar(empresaId, 2, true)
+                                        .listar(empresaId, TIPO_EGRESO, true)
                                         .stream(),
                                 categoriaRepository
-                                        .listar(empresaId, 2, false)
+                                        .listar(empresaId, TIPO_EGRESO, false)
                                         .stream()
                         )
                         .anyMatch(
                                 categoria ->
-                                        categoriaId.equals(
-                                                categoria.id()
-                                        )
+                                        categoriaId.equals(categoria.id())
                         );
 
         if (!esCategoriaDeEgreso) {
-
             throw new IllegalArgumentException(
                     "Solo pueden editarse categorías de egresos de esta empresa."
             );
@@ -105,10 +103,12 @@ public class CategoriaService {
         return categoriaRepository.actualizar(
                 empresaId,
                 categoriaId,
+                TIPO_EGRESO,
                 request.nombre(),
                 request.descripcion(),
                 request.activo(),
                 contextoSeguridad.usuarioId()
         );
     }
+
 }
