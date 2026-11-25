@@ -396,7 +396,8 @@ public class MovimientoService {
                         request.moneda(),
                         origenRegistro,
                         request.observacion(),
-                        usuarioId
+                        usuarioId,
+                        request.subcategoriaId()
                 );
 
 
@@ -726,7 +727,9 @@ public class MovimientoService {
 
                         request.observacion(),
 
-                        usuarioId
+                        usuarioId,
+                        request.subcategoriaId()
+
                 );
 
 

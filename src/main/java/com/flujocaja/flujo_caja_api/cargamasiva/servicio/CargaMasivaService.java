@@ -63,6 +63,8 @@ public class CargaMasivaService {
 
                                         fila.fechaMovimiento(),
                                         fila.categoriaId(),
+                                        fila.subcategoriaId(),
+
 
                                         fila.descripcion().trim(),
                                         fila.monto(),
@@ -135,6 +137,8 @@ public class CargaMasivaService {
 
             LocalDate fechaMovimiento,
             Integer categoriaId,
+            Integer subcategoriaId,
+
 
             String descripcion,
             BigDecimal monto,

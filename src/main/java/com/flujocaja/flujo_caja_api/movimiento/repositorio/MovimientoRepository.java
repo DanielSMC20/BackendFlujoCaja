@@ -149,7 +149,12 @@ public class MovimientoRepository {
                                 new SqlParameter(
                                         "nUsuarioId",
                                         Types.BIGINT
+                                ),
+                                new SqlParameter(
+                                        "nSubcategoriaMovimientoId",
+                                        Types.INTEGER
                                 )
+
                         )
                         .returningResultSet(
                                 "movimiento",
@@ -316,6 +321,11 @@ public class MovimientoRepository {
                                 new SqlParameter(
                                         "nUsuarioId",
                                         Types.BIGINT
+                                ),
+
+                                new SqlParameter(
+                                        "nSubcategoriaMovimientoId",
+                                        Types.INTEGER
                                 )
                         );
 
@@ -556,7 +566,8 @@ public class MovimientoRepository {
             Integer moneda,
             Integer origenRegistro,
             String observacion,
-            Long usuarioId
+            Long usuarioId,
+            Integer subcategoriaId
     ) {
 
         MapSqlParameterSource parametros =
@@ -638,6 +649,12 @@ public class MovimientoRepository {
                                 "nUsuarioId",
                                 usuarioId,
                                 Types.BIGINT
+
+                        )
+                        .addValue(
+                                "nSubcategoriaMovimientoId",
+                                subcategoriaId,
+                                Types.INTEGER
                         );
 
 
@@ -685,7 +702,8 @@ public class MovimientoRepository {
 
             String observacion,
 
-            Long usuarioId
+            Long usuarioId,
+            Integer subcategoriaId
     ) {
 
         MapSqlParameterSource parametros =
@@ -773,6 +791,10 @@ public class MovimientoRepository {
                                 "nUsuarioId",
                                 usuarioId,
                                 Types.BIGINT
+                        ) .addValue(
+                                "nSubcategoriaMovimientoId",
+                                subcategoriaId,
+                                Types.INTEGER
                         );
 
         paMovimientoUpd.execute(parametros);

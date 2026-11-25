@@ -96,7 +96,9 @@ public record MovimientoActualizarRequest(
                 regexp = "^[a-fA-F0-9]{64}$",
                 message = "El hash del XML no es válido."
         )
-        String hashXml
+        String hashXml,
+
+        Integer subcategoriaId
 
 ) {
 }

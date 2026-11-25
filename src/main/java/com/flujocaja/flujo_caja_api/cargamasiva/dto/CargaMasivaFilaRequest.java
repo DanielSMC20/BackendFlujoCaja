@@ -27,6 +27,8 @@ public record CargaMasivaFilaRequest(
         @NotNull
         @Positive
         Integer categoriaId,
+        Integer subcategoriaId,
+
 
         @NotBlank
         @Size(max = 150)
